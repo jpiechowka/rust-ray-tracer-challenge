@@ -29,9 +29,27 @@ RUSTFLAGS="-C target-cpu=native" cargo build --release
 
 On Windows you need to follow this pattern: https://superuser.com/a/1049433
 
-## Running
+## Running examples
 
-TODO: Provide details, flags and arguments for the CLI
+To run examples execute the following command:
+
+```
+cargo run --release --example {example_name}
+```
+
+For example to run projectile example run:
+
+```
+cargo run --release --example projectile
+```
+
+You can also build all of the examples and run them from the `` directory:
+
+```
+cargo build --release --examples
+cd target/release/examples
+./projectile
+```
 
 ## License
 
