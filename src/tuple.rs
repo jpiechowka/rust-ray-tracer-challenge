@@ -4,9 +4,9 @@ use crate::float_comparison::is_equal_f64_with_margin;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Tuple {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
     w: f64,
 }
 
