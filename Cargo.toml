@@ -1,0 +1,22 @@
+[package]
+name = "rust-ray-tracer-challenge"
+version = "0.1.0"
+edition = "2021"
+authors = ["Janusz Piechówka"]
+repository = "https://github.com/jpiechowka/rust-ray-tracer-challenge"
+license = "MIT OR Apache-2.0"
+description = "Rust ray tracer implementation, based on The Ray Tracer Challenge book by Jamis Buck"
+readme = "README.md"
+
+[lib]
+name = "raytracer"
+
+[profile.release]
+codegen-units = 1
+strip = true
+lto = true
+panic = "abort"
+
+[dependencies]
+rand = "0.8.5"
+rayon = "1.7.0"
