@@ -43,7 +43,7 @@ For example to run projectile example run:
 cargo run --release --example projectile
 ```
 
-You can also build all of the examples and run them from the `` directory:
+You can also build all of the examples and run them from the `examples` directory:
 
 ```
 cargo build --release --examples
