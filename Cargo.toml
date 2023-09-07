@@ -20,3 +20,6 @@ panic = "abort"
 [dependencies]
 rand = "0.8.5"
 rayon = "1.7.0"
+
+[dev-dependencies]
+rstest = "0.18.2"
