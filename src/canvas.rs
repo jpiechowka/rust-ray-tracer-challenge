@@ -39,6 +39,10 @@ impl Canvas {
             panic!("Row index is out of bounds when getting pixel from canvas");
         }
     }
+
+    pub fn export_as_ppm(&self) -> String {
+        format!("P3\n{} {}\n255", self.width, self.height)
+    }
 }
 
 #[cfg(test)]
@@ -79,5 +83,11 @@ mod tests {
         let blue = Color::new_color_clamped(0.0, 0.0, 1.0);
         canvas.write_pixel(10, 5, blue);
         assert_eq!(canvas.pixel_at(10, 5), &blue);
+    }
+
+    #[rstest]
+    fn can_export_as_ppm(canvas: Canvas) {
+        let ppm = canvas.export_as_ppm();
+        assert_eq!(ppm, "P3\n20 10\n255");
     }
 }
