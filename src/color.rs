@@ -2,9 +2,9 @@ use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
-    red: f64,
-    green: f64,
-    blue: f64,
+    pub red: f64,
+    pub green: f64,
+    pub blue: f64,
 }
 
 impl Color {
@@ -21,11 +21,23 @@ impl Color {
     }
 
     pub fn new_black() -> Self {
-        Self {
-            red: 0.0,
-            green: 0.0,
-            blue: 0.0,
-        }
+        Self::new_color_clamped(0.0, 0.0, 0.0)
+    }
+
+    pub fn new_white() -> Self {
+        Self::new_color_clamped(1.0, 1.0, 1.0)
+    }
+
+    pub fn new_red() -> Self {
+        Self::new_color_clamped(1.0, 0.0, 0.0)
+    }
+
+    pub fn new_green() -> Self {
+        Self::new_color_clamped(0.0, 1.0, 0.0)
+    }
+
+    pub fn new_blue() -> Self {
+        Self::new_color_clamped(0.0, 0.0, 1.0)
     }
 
     pub fn clamp(&self) -> Self {
@@ -241,5 +253,20 @@ mod tests {
         assert!(is_equal_f64_with_margin(result.red, 1.8));
         assert!(is_equal_f64_with_margin(result.green, 1.2));
         assert!(is_equal_f64_with_margin(result.blue, 1.5));
+    }
+
+    #[rstest]
+    #[case::black(Color::new_black(), Color::new_color_unclamped(0.0, 0.0, 0.0))]
+    #[case::white(Color::new_white(), Color::new_color_unclamped(1.0, 1.0, 1.0))]
+    #[case::red(Color::new_red(), Color::new_color_unclamped(1.0, 0.0, 0.0))]
+    #[case::green(Color::new_green(), Color::new_color_unclamped(0.0, 1.0, 0.0))]
+    #[case::blue(Color::new_blue(), Color::new_color_unclamped(0.0, 0.0, 1.0))]
+    fn can_create_colors_with_utility_functions(
+        #[case] color: Color,
+        #[case] expected_color: Color,
+    ) {
+        assert!(is_equal_f64_with_margin(color.red, expected_color.red));
+        assert!(is_equal_f64_with_margin(color.green, expected_color.green));
+        assert!(is_equal_f64_with_margin(color.blue, expected_color.blue));
     }
 }
