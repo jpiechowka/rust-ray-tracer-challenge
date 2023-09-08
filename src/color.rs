@@ -12,11 +12,19 @@ impl Color {
         Self { red, green, blue }
     }
 
-    pub fn new_color_clamp(red: f64, green: f64, blue: f64) -> Self {
+    pub fn new_color_clamped(red: f64, green: f64, blue: f64) -> Self {
         Self {
             red: red.clamp(0.0, 1.0),
             green: green.clamp(0.0, 1.0),
             blue: blue.clamp(0.0, 1.0),
+        }
+    }
+
+    pub fn new_black() -> Self {
+        Self {
+            red: 0.0,
+            green: 0.0,
+            blue: 0.0,
         }
     }
 
@@ -91,31 +99,31 @@ mod tests {
 
     #[rstest]
     #[case::red(
-        Color::new_color_clamp(10.0, 0.0, 0.0),
+        Color::new_color_clamped(10.0, 0.0, 0.0),
         Color::new_color_unclamped(1.0, 0.0, 0.0)
     )]
     #[case::green(
-        Color::new_color_clamp(0.0, 10.0, 0.0),
+        Color::new_color_clamped(0.0, 10.0, 0.0),
         Color::new_color_unclamped(0.0, 1.0, 0.0)
     )]
     #[case::blue(
-        Color::new_color_clamp(0.0, 0.0, 10.0),
+        Color::new_color_clamped(0.0, 0.0, 10.0),
         Color::new_color_unclamped(0.0, 0.0, 1.0)
     )]
     #[case::red_green(
-        Color::new_color_clamp(10.0, 10.0, 0.0),
+        Color::new_color_clamped(10.0, 10.0, 0.0),
         Color::new_color_unclamped(1.0, 1.0, 0.0)
     )]
     #[case::red_blue(
-        Color::new_color_clamp(10.0, 0.0, 10.0),
+        Color::new_color_clamped(10.0, 0.0, 10.0),
         Color::new_color_unclamped(1.0, 0.0, 1.0)
     )]
     #[case::green_blue(
-        Color::new_color_clamp(0.0, 10.0, 10.0),
+        Color::new_color_clamped(0.0, 10.0, 10.0),
         Color::new_color_unclamped(0.0, 1.0, 1.0)
     )]
     #[case::red_green_blue(
-        Color::new_color_clamp(10.0, 10.0, 10.0),
+        Color::new_color_clamped(10.0, 10.0, 10.0),
         Color::new_color_unclamped(1.0, 1.0, 1.0)
     )]
     fn can_create_color_with_clamped_values(
