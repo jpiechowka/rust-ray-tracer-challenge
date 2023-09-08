@@ -73,6 +73,7 @@ impl Canvas {
             self.width, self.height, total_pixels
         );
 
+        // FIXME: use .fold() instead of format!() - https://rust-lang.github.io/rust-clippy/master/index.html#/format_collect
         let ppm_data: String = self
             .pixels
             .par_iter()
