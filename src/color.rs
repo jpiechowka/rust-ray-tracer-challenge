@@ -96,7 +96,7 @@ impl Mul<f64> for Color {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::float_comparison::is_equal_f64_with_margin;
+    use approx::assert_abs_diff_eq;
     use rstest::*;
 
     #[fixture]
@@ -142,18 +142,9 @@ mod tests {
         #[case] input_color: Color,
         #[case] expected_color: Color,
     ) {
-        assert!(is_equal_f64_with_margin(
-            input_color.red,
-            expected_color.red
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.green,
-            expected_color.green
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.blue,
-            expected_color.blue
-        ));
+        assert_abs_diff_eq!(input_color.red, expected_color.red);
+        assert_abs_diff_eq!(input_color.green, expected_color.green);
+        assert_abs_diff_eq!(input_color.blue, expected_color.blue);
     }
 
     #[rstest]
@@ -189,18 +180,9 @@ mod tests {
         #[case] input_color: Color,
         #[case] expected_color: Color,
     ) {
-        assert!(is_equal_f64_with_margin(
-            input_color.red,
-            expected_color.red
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.green,
-            expected_color.green
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.blue,
-            expected_color.blue
-        ));
+        assert_abs_diff_eq!(input_color.red, expected_color.red);
+        assert_abs_diff_eq!(input_color.green, expected_color.green);
+        assert_abs_diff_eq!(input_color.blue, expected_color.blue);
     }
 
     #[rstest]
@@ -209,50 +191,41 @@ mod tests {
     #[case::bigger_values(Color::new_color_unclamped(0.0, 10.0, 0.0).clamp(), Color::new_color_unclamped(0.0, 1.0, 0.0))]
     #[case::negative_values(Color::new_color_unclamped(0.0, 0.0, -10.0).clamp(), Color::new_color_unclamped(0.0, 0.0, 0.0))]
     fn can_clamp_color_values(#[case] clamped_color: Color, #[case] expected_color: Color) {
-        assert!(is_equal_f64_with_margin(
-            clamped_color.red,
-            expected_color.red
-        ));
-        assert!(is_equal_f64_with_margin(
-            clamped_color.green,
-            expected_color.green
-        ));
-        assert!(is_equal_f64_with_margin(
-            clamped_color.blue,
-            expected_color.blue
-        ));
+        assert_abs_diff_eq!(clamped_color.red, expected_color.red);
+        assert_abs_diff_eq!(clamped_color.green, expected_color.green);
+        assert_abs_diff_eq!(clamped_color.blue, expected_color.blue);
     }
 
     #[rstest]
     fn can_add_colors(color: Color, color2: Color) {
         let result = color + color2;
-        assert!(is_equal_f64_with_margin(result.red, 1.6));
-        assert!(is_equal_f64_with_margin(result.green, 0.7));
-        assert!(is_equal_f64_with_margin(result.blue, 1.0));
+        assert_abs_diff_eq!(result.red, 1.6);
+        assert_abs_diff_eq!(result.green, 0.7);
+        assert_abs_diff_eq!(result.blue, 1.0);
     }
 
     #[rstest]
     fn can_subtract_colors(color: Color, color2: Color) {
         let result = color - color2;
-        assert!(is_equal_f64_with_margin(result.red, 0.2));
-        assert!(is_equal_f64_with_margin(result.green, 0.5));
-        assert!(is_equal_f64_with_margin(result.blue, 0.5));
+        assert_abs_diff_eq!(result.red, 0.2);
+        assert_abs_diff_eq!(result.green, 0.5);
+        assert_abs_diff_eq!(result.blue, 0.5);
     }
 
     #[rstest]
     fn can_multiply_colors_aka_hadamard_product(color: Color, color2: Color) {
         let result = color.hadamard_product(&color2);
-        assert!(is_equal_f64_with_margin(result.red, 0.63));
-        assert!(is_equal_f64_with_margin(result.green, 0.06));
-        assert!(is_equal_f64_with_margin(result.blue, 0.1875));
+        assert_abs_diff_eq!(result.red, 0.63);
+        assert_abs_diff_eq!(result.green, 0.06);
+        assert_abs_diff_eq!(result.blue, 0.1875);
     }
 
     #[rstest]
     fn can_multiply_color_by_a_scalar(color: Color) {
         let result = color * 2.0;
-        assert!(is_equal_f64_with_margin(result.red, 1.8));
-        assert!(is_equal_f64_with_margin(result.green, 1.2));
-        assert!(is_equal_f64_with_margin(result.blue, 1.5));
+        assert_abs_diff_eq!(result.red, 1.8);
+        assert_abs_diff_eq!(result.green, 1.2);
+        assert_abs_diff_eq!(result.blue, 1.5);
     }
 
     #[rstest]
@@ -265,8 +238,8 @@ mod tests {
         #[case] color: Color,
         #[case] expected_color: Color,
     ) {
-        assert!(is_equal_f64_with_margin(color.red, expected_color.red));
-        assert!(is_equal_f64_with_margin(color.green, expected_color.green));
-        assert!(is_equal_f64_with_margin(color.blue, expected_color.blue));
+        assert_abs_diff_eq!(color.red, expected_color.red);
+        assert_abs_diff_eq!(color.green, expected_color.green);
+        assert_abs_diff_eq!(color.blue, expected_color.blue);
     }
 }

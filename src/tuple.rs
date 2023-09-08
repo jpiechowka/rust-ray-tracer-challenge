@@ -1,6 +1,5 @@
+use approx::abs_diff_eq;
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
-
-use crate::float_comparison::is_equal_f64_with_margin;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Tuple {
@@ -20,11 +19,11 @@ impl Tuple {
     }
 
     pub fn is_point(&self) -> bool {
-        is_equal_f64_with_margin(self.w, 1.0)
+        abs_diff_eq!(self.w, 1.0)
     }
 
     pub fn is_vector(&self) -> bool {
-        is_equal_f64_with_margin(self.w, 0.0)
+        abs_diff_eq!(self.w, 0.0)
     }
 
     pub fn magnitude(&self) -> f64 {
@@ -145,6 +144,7 @@ impl Div<f64> for Tuple {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use approx::assert_abs_diff_eq;
     use rstest::*;
 
     #[fixture]
@@ -378,10 +378,7 @@ mod tests {
         #[case] input_vector: Tuple,
         #[case] expected_magnitude: f64,
     ) {
-        assert!(is_equal_f64_with_margin(
-            input_vector.magnitude(),
-            expected_magnitude
-        ));
+        assert_abs_diff_eq!(input_vector.magnitude(), expected_magnitude);
     }
 
     #[rstest]
@@ -389,22 +386,10 @@ mod tests {
     #[case::vector_1_2_3(Tuple::new_vector(1.0, 2.0, 3.0), Tuple::new_vector(1.0/14_f64.sqrt(), 2.0/14_f64.sqrt(), 3.0/14_f64.sqrt()))]
     fn can_normalize_a_vector(#[case] input_vector: Tuple, #[case] expected_vector: Tuple) {
         let normalized_vector = input_vector.normalize();
-        assert!(is_equal_f64_with_margin(
-            normalized_vector.x,
-            expected_vector.x
-        ));
-        assert!(is_equal_f64_with_margin(
-            normalized_vector.y,
-            expected_vector.y
-        ));
-        assert!(is_equal_f64_with_margin(
-            normalized_vector.z,
-            expected_vector.z
-        ));
-        assert!(is_equal_f64_with_margin(
-            normalized_vector.w,
-            expected_vector.w
-        ));
+        assert_abs_diff_eq!(normalized_vector.x, expected_vector.x);
+        assert_abs_diff_eq!(normalized_vector.y, expected_vector.y);
+        assert_abs_diff_eq!(normalized_vector.z, expected_vector.z);
+        assert_abs_diff_eq!(normalized_vector.w, expected_vector.w);
     }
 
     #[rstest]
