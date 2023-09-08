@@ -18,6 +18,10 @@ lto = true
 panic = "abort"
 
 [dependencies]
+env_logger = "0.10.0"
+image = "0.24.7"
+indicatif = { version = "0.17.6", features = ["rayon"] }
+log = "0.4.20"
 rand = "0.8.5"
 rayon = "1.7.0"
 
