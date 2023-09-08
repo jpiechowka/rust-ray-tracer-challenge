@@ -74,10 +74,10 @@ Currently the following features (or code) are implemented:
 
 ## Gallery
 
-### Chapter 1 and 2 - Projectile
+### Chapter 1 and 2: Projectile
 
 <p align="center">
-  <img src="/examples/projectile/projectile.png" width="600" title="projectile">
+  <img src="/examples/projectile/projectile.png" width="800" title="projectile">
 </p>
 
 ## License
