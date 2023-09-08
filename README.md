@@ -51,6 +51,27 @@ cd target/release/examples
 ./projectile
 ```
 
+## Progress tracker based on the book chapters
+
+Currently the following features (or code) are implemented:
+
+- [X] Chapter 01: Tuples, Points, and Vectors
+- [X] Chapter 02: Drawing on a Canvas
+- [X] Chapter 03: Matrices
+- [ ] Chapter 04: Matrix Transformations
+- [ ] Chapter 05: Ray-Sphere Intersections
+- [ ] Chapter 06: Light and Shading
+- [ ] Chapter 07: Making a Scene
+- [ ] Chapter 08: Shadows
+- [ ] Chapter 09: Planes
+- [ ] Chapter 10: Patterns
+- [ ] Chapter 11: Reflection and Refraction
+- [ ] Chapter 12: Cubes
+- [ ] Chapter 13: Cylinders
+- [ ] Chapter 14: Groups
+- [ ] Chapter 15: Triangles
+- [ ] Chapter 16: Constructive Solid Geometry (CSG)
+
 ## License
 
 Rust ray tracer is free, open source and permissively licensed! Except where noted (below and/or in individual files), all code in this repository is dual-licensed under either:
