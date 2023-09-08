@@ -72,6 +72,14 @@ Currently the following features (or code) are implemented:
 - [ ] Chapter 15: Triangles
 - [ ] Chapter 16: Constructive Solid Geometry (CSG)
 
+## Gallery
+
+### Chapter 1 and 2 - Projectile
+
+<p align="center">
+  <img src="/examples/projectile/projectile.png" width="600" title="projectile">
+</p>
+
 ## License
 
 Rust ray tracer is free, open source and permissively licensed! Except where noted (below and/or in individual files), all code in this repository is dual-licensed under either:
