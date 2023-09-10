@@ -82,7 +82,10 @@ Currently the following features (or code) are implemented:
 
 ### Chapter 3 and 4: Clock
 
-TODO
+<p align="center">
+  <img src="/examples/clock/clock.png" width="800" title="clock">
+</p>
+
 
 ## License
 
