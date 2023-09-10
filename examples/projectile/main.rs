@@ -1,7 +1,7 @@
 use env_logger::Env;
-use glam::{Vec3A, Vec4};
+use glam::Vec3A;
 use log::{debug, info};
-use raytracer::{canvas::Canvas, color::Color, tuple::Tuple};
+use raytracer::{canvas::Canvas, color::Color};
 
 const CANVAS_WIDTH: u16 = 900;
 const CANVAS_HEIGHT: u16 = 550;
@@ -10,14 +10,14 @@ const PNG_FILE_PATH: &str = "projectile.png";
 
 #[derive(Debug)]
 struct Environment {
-    gravity: Vec4, // A vector
-    wind: Vec4,    // A vector
+    gravity: Vec3A, // A vector
+    wind: Vec3A,    // A vector
 }
 
 #[derive(Debug)]
 struct Projectile {
-    position: Vec4, // A point
-    velocity: Vec4, // A vector
+    position: Vec3A, // A point
+    velocity: Vec3A, // A vector
 }
 
 fn tick(env: &Environment, proj: &Projectile) -> Projectile {
@@ -38,13 +38,13 @@ fn main() {
     let mut canvas = Canvas::new_black_canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
     let mut projectile = Projectile {
-        position: Vec4::new_point_tuple(0.0, 1.0, 0.0),
-        velocity: Vec4::new_vector_tuple(1.0, 1.8, 0.0).normalize() * 11.25,
+        position: Vec3A::new(0.0, 1.0, 0.0),
+        velocity: Vec3A::new(1.0, 1.8, 0.0).normalize() * 11.25,
     };
 
     let environment = Environment {
-        gravity: Vec4::new_vector_tuple(0.0, -0.1, 0.0),
-        wind: Vec4::new_vector_tuple(-0.01, 0.0, 0.0),
+        gravity: Vec3A::new(0.0, -0.1, 0.0),
+        wind: Vec3A::new(-0.01, 0.0, 0.0),
     };
 
     // Canvas coordinates are 0 indexed (so for 550 height we use 0-549 inclusive)
@@ -64,7 +64,7 @@ fn main() {
         .clamp(1.0, CANVAS_HEIGHT as f32) as u16;
     let mut proj_y_flipped = CANVAS_HEIGHT - proj_y;
 
-    canvas.write_pixel(proj_x, proj_y_flipped, Vec3A::new_red());
+    canvas.write_pixel(proj_x, proj_y_flipped, Color::new_red());
 
     debug!("Writing subsequent points on canvas");
     while projectile.position.y > 0.0 {
@@ -81,7 +81,7 @@ fn main() {
             .clamp(1.0, CANVAS_HEIGHT as f32) as u16;
         proj_y_flipped = CANVAS_HEIGHT - proj_y;
 
-        canvas.write_pixel(proj_x, proj_y_flipped, Vec3A::new_green());
+        canvas.write_pixel(proj_x, proj_y_flipped, Color::new_green());
     }
 
     canvas.export_as_ppm_and_save_to_file(PPM_FILE_PATH);

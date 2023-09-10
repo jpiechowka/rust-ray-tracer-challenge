@@ -1,15 +1,14 @@
 use crate::color::Color;
-use glam::Vec3A;
 use image::io::Reader as ImageReader;
 use log::{debug, info};
 use rayon::prelude::*;
 use std::{fs, io::Cursor};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct Canvas {
     width: u16,
     height: u16,
-    pixels: Vec<Vec<Vec3A>>,
+    pixels: Vec<Vec<Color>>,
 }
 
 impl Canvas {
@@ -18,11 +17,11 @@ impl Canvas {
         Self {
             width,
             height,
-            pixels: vec![vec![Vec3A::new_black(); width as usize]; height as usize],
+            pixels: vec![vec![Color::new_black(); width as usize]; height as usize],
         }
     }
 
-    pub fn new_with_initial_color(width: u16, height: u16, init_color: Vec3A) -> Self {
+    pub fn new_with_initial_color(width: u16, height: u16, init_color: Color) -> Self {
         info!("Creating new canvas with provided initial color, width: {width}, height: {height}");
         info!(
             "Initial canvas color as f32 values (0.0 - 1.0) R: {}, G: {}, B: {}",
@@ -43,7 +42,7 @@ impl Canvas {
         }
     }
 
-    pub fn write_pixel(&mut self, x: u16, y: u16, color: Vec3A) {
+    pub fn write_pixel(&mut self, x: u16, y: u16, color: Color) {
         if let Some(row) = self.pixels.get_mut(y as usize) {
             if let Some(pixel) = row.get_mut(x as usize) {
                 *pixel = color;
@@ -61,7 +60,7 @@ impl Canvas {
         }
     }
 
-    pub fn pixel_at(&mut self, x: u16, y: u16) -> &Vec3A {
+    pub fn pixel_at(&mut self, x: u16, y: u16) -> &Color {
         if let Some(row) = self.pixels.get(y as usize) {
             if let Some(pixel) = row.get(x as usize) {
                 pixel
@@ -163,14 +162,14 @@ mod tests {
         // Every pixel is initialized to black color
         for row in &canvas.pixels {
             for &color in row {
-                assert_eq!(color, Vec3A::new_black());
+                assert_eq!(color, Color::new_black());
             }
         }
     }
 
     #[rstest]
     fn can_write_pixel_to_canvas(mut canvas: Canvas) {
-        let red = Vec3A::new_red();
+        let red = Color::new_red();
         canvas.write_pixel(10, 5, red);
 
         let row = canvas.pixels.get(5).expect("should get rows");
@@ -180,7 +179,7 @@ mod tests {
 
     #[rstest]
     fn can_write_and_get_pixel_at_coordinates(mut canvas: Canvas) {
-        let blue = Vec3A::new_blue();
+        let blue = Color::new_blue();
         canvas.write_pixel(10, 5, blue);
         assert_eq!(canvas.pixel_at(10, 5), &blue);
     }
@@ -188,9 +187,9 @@ mod tests {
     #[test]
     fn can_export_small_canvas_as_ppm() {
         let mut canvas = Canvas::new_black_canvas(5, 3);
-        let c1 = Vec3A::new_color(1.5, 0.0, 0.0);
-        let c2 = Vec3A::new_color(0.0, 0.5, 0.0);
-        let c3 = Vec3A::new_color(-0.5, 0.0, 1.0);
+        let c1 = Color::new_color(1.5, 0.0, 0.0);
+        let c2 = Color::new_color(0.0, 0.5, 0.0);
+        let c3 = Color::new_color(-0.5, 0.0, 1.0);
         canvas.write_pixel(0, 0, c1);
         canvas.write_pixel(2, 1, c2);
         canvas.write_pixel(4, 2, c3);
@@ -200,7 +199,7 @@ mod tests {
 
     #[test]
     fn can_split_long_lines_when_exporting_as_ppm() {
-        let color = Vec3A::new_color(1.0, 0.9, 0.8);
+        let color = Color::new_color(1.0, 0.9, 0.8);
         let canvas = Canvas::new_with_initial_color(10, 2, color);
         let ppm = canvas.export_as_ppm();
         assert_eq!(ppm, "P3\n10 2\n255\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n");
@@ -208,7 +207,7 @@ mod tests {
 
     #[test]
     fn ppm_export_ends_with_a_newline() {
-        let color = Vec3A::new_color(1.0, 0.9, 0.8);
+        let color = Color::new_color(1.0, 0.9, 0.8);
         let canvas = Canvas::new_with_initial_color(20, 20, color);
         let ppm = canvas.export_as_ppm();
         let ppm_chars: Vec<char> = ppm.chars().collect();
