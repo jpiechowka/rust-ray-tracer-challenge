@@ -14,14 +14,28 @@ pub struct Canvas {
 
 impl Canvas {
     pub fn new_black_canvas(width: u16, height: u16) -> Self {
+        info!("Creating new black canvas, width: {width}, height: {height}");
         Self {
             width,
             height,
-            pixels: vec![vec![Color::new_black(); width as usize]; height as usize],
+            pixels: vec![vec![Vec3A::new_black(); width as usize]; height as usize],
         }
     }
 
     pub fn new_with_initial_color(width: u16, height: u16, init_color: Vec3A) -> Self {
+        info!("Creating new canvas with provided initial color, width: {width}, height: {height}");
+        info!(
+            "Initial canvas color as f32 values (0.0 - 1.0) R: {}, G: {}, B: {}",
+            init_color.get_red_val(),
+            init_color.get_green_val(),
+            init_color.get_blue_val()
+        );
+        info!(
+            "Initial canvas color as u8 values (0 - 255) R: {}, G: {}, B: {}",
+            init_color.get_red_val_as_u8(),
+            init_color.get_green_val_as_u8(),
+            init_color.get_blue_val_as_u8()
+        );
         Self {
             width,
             height,
@@ -69,7 +83,7 @@ impl Canvas {
         let total_pixels: u64 = self.width as u64 * self.height as u64;
         info!("Exporting canvas as PPM");
         debug!(
-            "Canvas width: {}, height: {}, total pixels: {}",
+            "Exported canvas width: {}, height: {}, total pixels: {}",
             self.width, self.height, total_pixels
         );
 
@@ -80,9 +94,9 @@ impl Canvas {
             .par_iter()
             .flatten()
             .map(|color| {
-                let r = (color.get_red_val() * 255.0).round() as u8;
-                let g = (color.get_green_val() * 255.0).round() as u8;
-                let b = (color.get_blue_val() * 255.0).round() as u8;
+                let r = color.get_red_val_as_u8();
+                let g = color.get_green_val_as_u8();
+                let b = color.get_blue_val_as_u8();
                 format!("{r} {g} {b}",)
             })
             .collect::<Vec<String>>()
@@ -119,7 +133,7 @@ impl Canvas {
         let img = reader.decode().expect("should decode PPM image");
 
         debug!(
-            "The image format is derived from the file extension: {}",
+            "The converted image format is derived from the file extension: {}",
             expected_file_format
         );
         info!(
@@ -149,14 +163,14 @@ mod tests {
         // Every pixel is initialized to black color
         for row in &canvas.pixels {
             for &color in row {
-                assert_eq!(color, Color::new_color_clamped(0.0, 0.0, 0.0));
+                assert_eq!(color, Vec3A::new_black());
             }
         }
     }
 
     #[rstest]
     fn can_write_pixel_to_canvas(mut canvas: Canvas) {
-        let red = Color::new_color_clamped(1.0, 0.0, 0.0);
+        let red = Vec3A::new_red();
         canvas.write_pixel(10, 5, red);
 
         let row = canvas.pixels.get(5).expect("should get rows");
@@ -166,7 +180,7 @@ mod tests {
 
     #[rstest]
     fn can_write_and_get_pixel_at_coordinates(mut canvas: Canvas) {
-        let blue = Color::new_color_clamped(0.0, 0.0, 1.0);
+        let blue = Vec3A::new_blue();
         canvas.write_pixel(10, 5, blue);
         assert_eq!(canvas.pixel_at(10, 5), &blue);
     }
@@ -174,9 +188,9 @@ mod tests {
     #[test]
     fn can_export_small_canvas_as_ppm() {
         let mut canvas = Canvas::new_black_canvas(5, 3);
-        let c1 = Color::new_color_unclamped(1.5, 0.0, 0.0);
-        let c2 = Color::new_color_unclamped(0.0, 0.5, 0.0);
-        let c3 = Color::new_color_unclamped(-0.5, 0.0, 1.0);
+        let c1 = Vec3A::new_color(1.5, 0.0, 0.0);
+        let c2 = Vec3A::new_color(0.0, 0.5, 0.0);
+        let c3 = Vec3A::new_color(-0.5, 0.0, 1.0);
         canvas.write_pixel(0, 0, c1);
         canvas.write_pixel(2, 1, c2);
         canvas.write_pixel(4, 2, c3);
@@ -186,7 +200,7 @@ mod tests {
 
     #[test]
     fn can_split_long_lines_when_exporting_as_ppm() {
-        let color = Color::new_color_clamped(1.0, 0.9, 0.8);
+        let color = Vec3A::new_color(1.0, 0.9, 0.8);
         let canvas = Canvas::new_with_initial_color(10, 2, color);
         let ppm = canvas.export_as_ppm();
         assert_eq!(ppm, "P3\n10 2\n255\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n");
@@ -194,7 +208,7 @@ mod tests {
 
     #[test]
     fn ppm_export_ends_with_a_newline() {
-        let color = Color::new_color_clamped(1.0, 0.9, 0.8);
+        let color = Vec3A::new_color(1.0, 0.9, 0.8);
         let canvas = Canvas::new_with_initial_color(20, 20, color);
         let ppm = canvas.export_as_ppm();
         let ppm_chars: Vec<char> = ppm.chars().collect();

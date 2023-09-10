@@ -1,5 +1,5 @@
 use env_logger::Env;
-use glam::Vec4;
+use glam::{Vec3A, Vec4};
 use log::{debug, info};
 use raytracer::{canvas::Canvas, color::Color, tuple::Tuple};
 
@@ -64,7 +64,7 @@ fn main() {
         .clamp(1.0, CANVAS_HEIGHT as f32) as u16;
     let mut proj_y_flipped = CANVAS_HEIGHT - proj_y;
 
-    canvas.write_pixel(proj_x, proj_y_flipped, Color::new_red());
+    canvas.write_pixel(proj_x, proj_y_flipped, Vec3A::new_red());
 
     debug!("Writing subsequent points on canvas");
     while projectile.position.y > 0.0 {
@@ -81,7 +81,7 @@ fn main() {
             .clamp(1.0, CANVAS_HEIGHT as f32) as u16;
         proj_y_flipped = CANVAS_HEIGHT - proj_y;
 
-        canvas.write_pixel(proj_x, proj_y_flipped, Color::new_green());
+        canvas.write_pixel(proj_x, proj_y_flipped, Vec3A::new_green());
     }
 
     canvas.export_as_ppm_and_save_to_file(PPM_FILE_PATH);
