@@ -59,7 +59,7 @@ Currently the following features (or code) are implemented:
 - [X] Chapter 02: Drawing on a Canvas
 - [X] Chapter 03: Matrices
 - [X] Chapter 04: Matrix Transformations
-- [ ] Chapter 05: Ray-Sphere Intersections
+- [X] Chapter 05: Ray-Sphere Intersections
 - [ ] Chapter 06: Light and Shading
 - [ ] Chapter 07: Making a Scene
 - [ ] Chapter 08: Shadows
@@ -86,6 +86,11 @@ Currently the following features (or code) are implemented:
   <img src="/examples/clock/clock.png" width="800" title="clock">
 </p>
 
+### Chapter 5: Circle
+
+<p align="center">
+  <img src="/examples/circle/circle.png" width="800" title="circle">
+</p>
 
 ## License
 
