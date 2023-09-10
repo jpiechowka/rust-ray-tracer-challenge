@@ -1,5 +1,5 @@
 # Rust ray tracer challenge
-Rust ray tracer implementation, based on The Ray Tracer Challenge book by Jamis Buck. Relies heavily on the `glam` crate for linear algebra (https://github.com/bitshifter/glam-rs).
+Rust ray tracer implementation, based on The Ray Tracer Challenge book by Jamis Buck (https://pragprog.com/titles/jbtracer/the-ray-tracer-challenge). Relies heavily on the `glam` crate for linear algebra (https://github.com/bitshifter/glam-rs).
 
 * Progress tracker based on the book chapters: [here](#progress-tracker-based-on-the-book-chapters)
 
