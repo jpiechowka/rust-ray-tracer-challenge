@@ -58,7 +58,7 @@ Currently the following features (or code) are implemented:
 - [X] Chapter 01: Tuples, Points, and Vectors
 - [X] Chapter 02: Drawing on a Canvas
 - [X] Chapter 03: Matrices
-- [ ] Chapter 04: Matrix Transformations
+- [X] Chapter 04: Matrix Transformations
 - [ ] Chapter 05: Ray-Sphere Intersections
 - [ ] Chapter 06: Light and Shading
 - [ ] Chapter 07: Making a Scene
@@ -79,6 +79,10 @@ Currently the following features (or code) are implemented:
 <p align="center">
   <img src="/examples/projectile/projectile.png" width="800" title="projectile">
 </p>
+
+### Chapter 3 and 4: Clock
+
+TODO
 
 ## License
 
