@@ -1,11 +1,10 @@
 use crate::color::Color;
 use image::io::Reader as ImageReader;
-use indicatif::ParallelProgressIterator;
 use log::{debug, info};
 use rayon::prelude::*;
 use std::{fs, io::Cursor};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct Canvas {
     width: u16,
     height: u16,
@@ -14,6 +13,7 @@ pub struct Canvas {
 
 impl Canvas {
     pub fn new_black_canvas(width: u16, height: u16) -> Self {
+        info!("Creating new black canvas, width: {width}, height: {height}");
         Self {
             width,
             height,
@@ -22,6 +22,19 @@ impl Canvas {
     }
 
     pub fn new_with_initial_color(width: u16, height: u16, init_color: Color) -> Self {
+        info!("Creating new canvas with provided initial color, width: {width}, height: {height}");
+        info!(
+            "Initial canvas color as f32 values (0.0 - 1.0) R: {}, G: {}, B: {}",
+            init_color.get_red_val(),
+            init_color.get_green_val(),
+            init_color.get_blue_val()
+        );
+        info!(
+            "Initial canvas color as u8 values (0 - 255) R: {}, G: {}, B: {}",
+            init_color.get_red_val_as_u8(),
+            init_color.get_green_val_as_u8(),
+            init_color.get_blue_val_as_u8()
+        );
         Self {
             width,
             height,
@@ -69,20 +82,20 @@ impl Canvas {
         let total_pixels: u64 = self.width as u64 * self.height as u64;
         info!("Exporting canvas as PPM");
         debug!(
-            "Canvas width: {}, height: {}, total pixels: {}",
+            "Exported canvas width: {}, height: {}, total pixels: {}",
             self.width, self.height, total_pixels
         );
 
+        // TODO: Use image create directly instead of creating PPM string for better flexibility
         // FIXME: use .fold() instead of format!() - https://rust-lang.github.io/rust-clippy/master/index.html#/format_collect
         let ppm_data: String = self
             .pixels
             .par_iter()
-            .progress_count(total_pixels)
             .flatten()
             .map(|color| {
-                let r = (color.red * 255.0).round() as u8;
-                let g = (color.green * 255.0).round() as u8;
-                let b = (color.blue * 255.0).round() as u8;
+                let r = color.get_red_val_as_u8();
+                let g = color.get_green_val_as_u8();
+                let b = color.get_blue_val_as_u8();
                 format!("{r} {g} {b}",)
             })
             .collect::<Vec<String>>()
@@ -119,7 +132,7 @@ impl Canvas {
         let img = reader.decode().expect("should decode PPM image");
 
         debug!(
-            "The image format is derived from the file extension: {}",
+            "The converted image format is derived from the file extension: {}",
             expected_file_format
         );
         info!(
@@ -149,14 +162,14 @@ mod tests {
         // Every pixel is initialized to black color
         for row in &canvas.pixels {
             for &color in row {
-                assert_eq!(color, Color::new_color_clamped(0.0, 0.0, 0.0));
+                assert_eq!(color, Color::new_black());
             }
         }
     }
 
     #[rstest]
     fn can_write_pixel_to_canvas(mut canvas: Canvas) {
-        let red = Color::new_color_clamped(1.0, 0.0, 0.0);
+        let red = Color::new_red();
         canvas.write_pixel(10, 5, red);
 
         let row = canvas.pixels.get(5).expect("should get rows");
@@ -166,7 +179,7 @@ mod tests {
 
     #[rstest]
     fn can_write_and_get_pixel_at_coordinates(mut canvas: Canvas) {
-        let blue = Color::new_color_clamped(0.0, 0.0, 1.0);
+        let blue = Color::new_blue();
         canvas.write_pixel(10, 5, blue);
         assert_eq!(canvas.pixel_at(10, 5), &blue);
     }
@@ -174,9 +187,9 @@ mod tests {
     #[test]
     fn can_export_small_canvas_as_ppm() {
         let mut canvas = Canvas::new_black_canvas(5, 3);
-        let c1 = Color::new_color_unclamped(1.5, 0.0, 0.0);
-        let c2 = Color::new_color_unclamped(0.0, 0.5, 0.0);
-        let c3 = Color::new_color_unclamped(-0.5, 0.0, 1.0);
+        let c1 = Color::new_color(1.5, 0.0, 0.0);
+        let c2 = Color::new_color(0.0, 0.5, 0.0);
+        let c3 = Color::new_color(-0.5, 0.0, 1.0);
         canvas.write_pixel(0, 0, c1);
         canvas.write_pixel(2, 1, c2);
         canvas.write_pixel(4, 2, c3);
@@ -186,7 +199,7 @@ mod tests {
 
     #[test]
     fn can_split_long_lines_when_exporting_as_ppm() {
-        let color = Color::new_color_clamped(1.0, 0.9, 0.8);
+        let color = Color::new_color(1.0, 0.9, 0.8);
         let canvas = Canvas::new_with_initial_color(10, 2, color);
         let ppm = canvas.export_as_ppm();
         assert_eq!(ppm, "P3\n10 2\n255\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n255 230 204 255 230 204 255 230 204 255 230 204 255 230 204\n");
@@ -194,7 +207,7 @@ mod tests {
 
     #[test]
     fn ppm_export_ends_with_a_newline() {
-        let color = Color::new_color_clamped(1.0, 0.9, 0.8);
+        let color = Color::new_color(1.0, 0.9, 0.8);
         let canvas = Canvas::new_with_initial_color(20, 20, color);
         let ppm = canvas.export_as_ppm();
         let ppm_chars: Vec<char> = ppm.chars().collect();

@@ -1,59 +1,71 @@
 use std::ops::{Add, Mul, Sub};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+use glam::Vec3A;
+
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Color {
-    pub red: f64,
-    pub green: f64,
-    pub blue: f64,
+    values: Vec3A,
 }
 
 impl Color {
-    pub fn new_color_unclamped(red: f64, green: f64, blue: f64) -> Self {
-        Self { red, green, blue }
-    }
-
-    pub fn new_color_clamped(red: f64, green: f64, blue: f64) -> Self {
+    pub fn new_color(red: f32, green: f32, blue: f32) -> Self {
         Self {
-            red: red.clamp(0.0, 1.0),
-            green: green.clamp(0.0, 1.0),
-            blue: blue.clamp(0.0, 1.0),
+            values: Vec3A::new(red, green, blue),
         }
     }
 
     pub fn new_black() -> Self {
-        Self::new_color_clamped(0.0, 0.0, 0.0)
+        Self {
+            values: Vec3A::new(0.0, 0.0, 0.0),
+        }
     }
 
     pub fn new_white() -> Self {
-        Self::new_color_clamped(1.0, 1.0, 1.0)
+        Self {
+            values: Vec3A::new(1.0, 1.0, 1.0),
+        }
     }
 
     pub fn new_red() -> Self {
-        Self::new_color_clamped(1.0, 0.0, 0.0)
+        Self {
+            values: Vec3A::new(1.0, 0.0, 0.0),
+        }
     }
 
     pub fn new_green() -> Self {
-        Self::new_color_clamped(0.0, 1.0, 0.0)
+        Self {
+            values: Vec3A::new(0.0, 1.0, 0.0),
+        }
     }
 
     pub fn new_blue() -> Self {
-        Self::new_color_clamped(0.0, 0.0, 1.0)
-    }
-
-    pub fn clamp(&self) -> Self {
         Self {
-            red: self.red.clamp(0.0, 1.0),
-            green: self.green.clamp(0.0, 1.0),
-            blue: self.blue.clamp(0.0, 1.0),
+            values: Vec3A::new(0.0, 0.0, 1.0),
         }
     }
 
-    pub fn hadamard_product(&self, other: &Color) -> Self {
-        Self {
-            red: self.red * other.red,
-            green: self.green * other.green,
-            blue: self.blue * other.blue,
-        }
+    pub fn get_red_val(&self) -> f32 {
+        self.values.x
+    }
+
+    pub fn get_green_val(&self) -> f32 {
+        self.values.y
+    }
+
+    pub fn get_blue_val(&self) -> f32 {
+        self.values.z
+    }
+
+    pub fn get_red_val_as_u8(&self) -> u8 {
+        (self.values.x * 255.0).round() as u8
+    }
+
+    pub fn get_green_val_as_u8(&self) -> u8 {
+        (self.values.y * 255.0).round() as u8
+    }
+
+    pub fn get_blue_val_as_u8(&self) -> u8 {
+        (self.values.z * 255.0).round() as u8
     }
 }
 
@@ -62,9 +74,7 @@ impl Add for Color {
 
     fn add(self, other: Self) -> Self {
         Self {
-            red: self.red + other.red,
-            green: self.green + other.green,
-            blue: self.blue + other.blue,
+            values: self.values + other.values,
         }
     }
 }
@@ -74,21 +84,27 @@ impl Sub for Color {
 
     fn sub(self, other: Self) -> Self {
         Self {
-            red: self.red - other.red,
-            green: self.green - other.green,
-            blue: self.blue - other.blue,
+            values: self.values - other.values,
         }
     }
 }
 
-impl Mul<f64> for Color {
+impl Mul for Color {
     type Output = Self;
 
-    fn mul(self, rhs: f64) -> Self {
+    fn mul(self, other: Self) -> Self {
         Self {
-            red: self.red * rhs,
-            green: self.green * rhs,
-            blue: self.blue * rhs,
+            values: self.values * other.values,
+        }
+    }
+}
+
+impl Mul<f32> for Color {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self {
+        Self {
+            values: self.values * rhs,
         }
     }
 }
@@ -96,177 +112,132 @@ impl Mul<f64> for Color {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::float_comparison::is_equal_f64_with_margin;
+    use approx::assert_abs_diff_eq;
     use rstest::*;
 
     #[fixture]
     pub fn color() -> Color {
-        Color::new_color_unclamped(0.9, 0.6, 0.75)
+        Color::new_color(0.9, 0.6, 0.75)
     }
 
     #[fixture]
     pub fn color2() -> Color {
-        Color::new_color_unclamped(0.7, 0.1, 0.25)
+        Color::new_color(0.7, 0.1, 0.25)
     }
 
     #[rstest]
-    #[case::red(
-        Color::new_color_clamped(10.0, 0.0, 0.0),
-        Color::new_color_unclamped(1.0, 0.0, 0.0)
-    )]
-    #[case::green(
-        Color::new_color_clamped(0.0, 10.0, 0.0),
-        Color::new_color_unclamped(0.0, 1.0, 0.0)
-    )]
-    #[case::blue(
-        Color::new_color_clamped(0.0, 0.0, 10.0),
-        Color::new_color_unclamped(0.0, 0.0, 1.0)
-    )]
-    #[case::red_green(
-        Color::new_color_clamped(10.0, 10.0, 0.0),
-        Color::new_color_unclamped(1.0, 1.0, 0.0)
-    )]
-    #[case::red_blue(
-        Color::new_color_clamped(10.0, 0.0, 10.0),
-        Color::new_color_unclamped(1.0, 0.0, 1.0)
-    )]
-    #[case::green_blue(
-        Color::new_color_clamped(0.0, 10.0, 10.0),
-        Color::new_color_unclamped(0.0, 1.0, 1.0)
-    )]
-    #[case::red_green_blue(
-        Color::new_color_clamped(10.0, 10.0, 10.0),
-        Color::new_color_unclamped(1.0, 1.0, 1.0)
-    )]
-    fn can_create_color_with_clamped_values(
-        #[case] input_color: Color,
-        #[case] expected_color: Color,
-    ) {
-        assert!(is_equal_f64_with_margin(
-            input_color.red,
-            expected_color.red
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.green,
-            expected_color.green
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.blue,
-            expected_color.blue
-        ));
-    }
-
-    #[rstest]
-    #[case::red(
-        Color::new_color_unclamped(10.0, 0.0, 0.0),
-        Color::new_color_unclamped(10.0, 0.0, 0.0)
-    )]
-    #[case::green(
-        Color::new_color_unclamped(0.0, 10.0, 0.0),
-        Color::new_color_unclamped(0.0, 10.0, 0.0)
-    )]
-    #[case::blue(
-        Color::new_color_unclamped(0.0, 0.0, 10.0),
-        Color::new_color_unclamped(0.0, 0.0, 10.0)
-    )]
-    #[case::red_green(
-        Color::new_color_unclamped(10.0, 10.0, 0.0),
-        Color::new_color_unclamped(10.0, 10.0, 0.0)
-    )]
-    #[case::red_blue(
-        Color::new_color_unclamped(10.0, 0.0, 10.0),
-        Color::new_color_unclamped(10.0, 0.0, 10.0)
-    )]
-    #[case::green_blue(
-        Color::new_color_unclamped(0.0, 10.0, 10.0),
-        Color::new_color_unclamped(0.0, 10.0, 10.0)
-    )]
-    #[case::red_green_blue(
-        Color::new_color_unclamped(10.0, 10.0, 10.0),
-        Color::new_color_unclamped(10.0, 10.0, 10.0)
-    )]
-    fn can_create_color_without_clamped_values(
-        #[case] input_color: Color,
-        #[case] expected_color: Color,
-    ) {
-        assert!(is_equal_f64_with_margin(
-            input_color.red,
-            expected_color.red
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.green,
-            expected_color.green
-        ));
-        assert!(is_equal_f64_with_margin(
-            input_color.blue,
-            expected_color.blue
-        ));
-    }
-
-    #[rstest]
-    #[case::correct_values(Color::new_color_unclamped(1.0, 0.0, 0.0).clamp(), Color::new_color_unclamped(1.0, 0.0, 0.0))]
-    #[case::correct_values2(Color::new_color_unclamped(0.0, 0.0, 0.0).clamp(), Color::new_color_unclamped(0.0, 0.0, 0.0))]
-    #[case::bigger_values(Color::new_color_unclamped(0.0, 10.0, 0.0).clamp(), Color::new_color_unclamped(0.0, 1.0, 0.0))]
-    #[case::negative_values(Color::new_color_unclamped(0.0, 0.0, -10.0).clamp(), Color::new_color_unclamped(0.0, 0.0, 0.0))]
-    fn can_clamp_color_values(#[case] clamped_color: Color, #[case] expected_color: Color) {
-        assert!(is_equal_f64_with_margin(
-            clamped_color.red,
-            expected_color.red
-        ));
-        assert!(is_equal_f64_with_margin(
-            clamped_color.green,
-            expected_color.green
-        ));
-        assert!(is_equal_f64_with_margin(
-            clamped_color.blue,
-            expected_color.blue
-        ));
+    #[case::red(Color::new_color(10.0, 0.0, 0.0), Color::new_color(10.0, 0.0, 0.0))]
+    #[case::green(Color::new_color(0.0, 10.0, 0.0), Color::new_color(0.0, 10.0, 0.0))]
+    #[case::blue(Color::new_color(0.0, 0.0, 10.0), Color::new_color(0.0, 0.0, 10.0))]
+    #[case::red_green(Color::new_color(10.0, 10.0, 0.0), Color::new_color(10.0, 10.0, 0.0))]
+    #[case::red_blue(Color::new_color(10.0, 0.0, 10.0), Color::new_color(10.0, 0.0, 10.0))]
+    #[case::green_blue(Color::new_color(0.0, 10.0, 10.0), Color::new_color(0.0, 10.0, 10.0))]
+    #[case::red_green_blue(Color::new_color(10.0, 10.0, 10.0), Color::new_color(10.0, 10.0, 10.0))]
+    fn can_create_colors(#[case] input_color: Color, #[case] expected_color: Color) {
+        assert_abs_diff_eq!(
+            input_color.values.x,
+            expected_color.values.x,
+            epsilon = f32::EPSILON
+        );
+        assert_abs_diff_eq!(
+            input_color.values.y,
+            expected_color.values.y,
+            epsilon = f32::EPSILON
+        );
+        assert_abs_diff_eq!(
+            input_color.values.z,
+            expected_color.values.z,
+            epsilon = f32::EPSILON
+        );
     }
 
     #[rstest]
     fn can_add_colors(color: Color, color2: Color) {
         let result = color + color2;
-        assert!(is_equal_f64_with_margin(result.red, 1.6));
-        assert!(is_equal_f64_with_margin(result.green, 0.7));
-        assert!(is_equal_f64_with_margin(result.blue, 1.0));
+        assert_abs_diff_eq!(result.values.x, 1.6, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.y, 0.7, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.z, 1.0, epsilon = f32::EPSILON);
     }
 
     #[rstest]
     fn can_subtract_colors(color: Color, color2: Color) {
         let result = color - color2;
-        assert!(is_equal_f64_with_margin(result.red, 0.2));
-        assert!(is_equal_f64_with_margin(result.green, 0.5));
-        assert!(is_equal_f64_with_margin(result.blue, 0.5));
+        assert_abs_diff_eq!(result.values.x, 0.2, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.y, 0.5, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.z, 0.5, epsilon = f32::EPSILON);
     }
 
     #[rstest]
     fn can_multiply_colors_aka_hadamard_product(color: Color, color2: Color) {
-        let result = color.hadamard_product(&color2);
-        assert!(is_equal_f64_with_margin(result.red, 0.63));
-        assert!(is_equal_f64_with_margin(result.green, 0.06));
-        assert!(is_equal_f64_with_margin(result.blue, 0.1875));
+        let result = color * color2;
+        assert_abs_diff_eq!(result.values.x, 0.63, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.y, 0.06, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.z, 0.1875, epsilon = f32::EPSILON);
     }
 
     #[rstest]
     fn can_multiply_color_by_a_scalar(color: Color) {
         let result = color * 2.0;
-        assert!(is_equal_f64_with_margin(result.red, 1.8));
-        assert!(is_equal_f64_with_margin(result.green, 1.2));
-        assert!(is_equal_f64_with_margin(result.blue, 1.5));
+        assert_abs_diff_eq!(result.values.x, 1.8, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.y, 1.2, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(result.values.z, 1.5, epsilon = f32::EPSILON);
     }
 
     #[rstest]
-    #[case::black(Color::new_black(), Color::new_color_unclamped(0.0, 0.0, 0.0))]
-    #[case::white(Color::new_white(), Color::new_color_unclamped(1.0, 1.0, 1.0))]
-    #[case::red(Color::new_red(), Color::new_color_unclamped(1.0, 0.0, 0.0))]
-    #[case::green(Color::new_green(), Color::new_color_unclamped(0.0, 1.0, 0.0))]
-    #[case::blue(Color::new_blue(), Color::new_color_unclamped(0.0, 0.0, 1.0))]
+    #[case::black(Color::new_black(), Color::new_color(0.0, 0.0, 0.0))]
+    #[case::white(Color::new_white(), Color::new_color(1.0, 1.0, 1.0))]
+    #[case::red(Color::new_red(), Color::new_color(1.0, 0.0, 0.0))]
+    #[case::green(Color::new_green(), Color::new_color(0.0, 1.0, 0.0))]
+    #[case::blue(Color::new_blue(), Color::new_color(0.0, 0.0, 1.0))]
     fn can_create_colors_with_utility_functions(
-        #[case] color: Color,
+        #[case] input_color: Color,
         #[case] expected_color: Color,
     ) {
-        assert!(is_equal_f64_with_margin(color.red, expected_color.red));
-        assert!(is_equal_f64_with_margin(color.green, expected_color.green));
-        assert!(is_equal_f64_with_margin(color.blue, expected_color.blue));
+        assert_abs_diff_eq!(
+            input_color.values.x,
+            expected_color.values.x,
+            epsilon = f32::EPSILON
+        );
+        assert_abs_diff_eq!(
+            input_color.values.y,
+            expected_color.values.y,
+            epsilon = f32::EPSILON
+        );
+        assert_abs_diff_eq!(
+            input_color.values.z,
+            expected_color.values.z,
+            epsilon = f32::EPSILON
+        );
+    }
+
+    #[rstest]
+    fn can_get_colors(color: Color) {
+        assert_abs_diff_eq!(color.values.x, 0.9, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(color.values.y, 0.6, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(color.values.z, 0.75, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(color.get_red_val(), 0.9, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(color.get_green_val(), 0.6, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(color.get_blue_val(), 0.75, epsilon = f32::EPSILON);
+    }
+
+    #[rstest]
+    #[case::black(Color::new_black(), 0, 0, 0)]
+    #[case::white(Color::new_white(), 255, 255, 255)]
+    #[case::red(Color::new_red(), 255, 0, 0)]
+    #[case::green(Color::new_green(), 0, 255, 0)]
+    #[case::blue(Color::new_blue(), 0, 0, 255)]
+    #[case(Color::new_color(0.25, 0.25, 0.25), 64, 64, 64)]
+    #[case(Color::new_color(0.5, 0.5, 0.5), 128, 128, 128)]
+    #[case(Color::new_color(0.75, 0.75, 0.75), 191, 191, 191)]
+    #[case(Color::new_color(0.4, 0.6, 0.8), 102, 153, 204)]
+    fn can_get_colors_converted_to_u8(
+        #[case] input_color: Color,
+        #[case] expected_red_value: u8,
+        #[case] expected_green_value: u8,
+        #[case] expected_blue_value: u8,
+    ) {
+        assert_eq!(input_color.get_red_val_as_u8(), expected_red_value);
+        assert_eq!(input_color.get_green_val_as_u8(), expected_green_value);
+        assert_eq!(input_color.get_blue_val_as_u8(), expected_blue_value);
     }
 }
