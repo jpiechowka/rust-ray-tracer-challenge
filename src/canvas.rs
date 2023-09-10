@@ -1,6 +1,6 @@
 use crate::color::Color;
+use glam::Vec3A;
 use image::io::Reader as ImageReader;
-use indicatif::ParallelProgressIterator;
 use log::{debug, info};
 use rayon::prelude::*;
 use std::{fs, io::Cursor};
@@ -9,7 +9,7 @@ use std::{fs, io::Cursor};
 pub struct Canvas {
     width: u16,
     height: u16,
-    pixels: Vec<Vec<Color>>,
+    pixels: Vec<Vec<Vec3A>>,
 }
 
 impl Canvas {
@@ -21,7 +21,7 @@ impl Canvas {
         }
     }
 
-    pub fn new_with_initial_color(width: u16, height: u16, init_color: Color) -> Self {
+    pub fn new_with_initial_color(width: u16, height: u16, init_color: Vec3A) -> Self {
         Self {
             width,
             height,
@@ -29,7 +29,7 @@ impl Canvas {
         }
     }
 
-    pub fn write_pixel(&mut self, x: u16, y: u16, color: Color) {
+    pub fn write_pixel(&mut self, x: u16, y: u16, color: Vec3A) {
         if let Some(row) = self.pixels.get_mut(y as usize) {
             if let Some(pixel) = row.get_mut(x as usize) {
                 *pixel = color;
@@ -47,7 +47,7 @@ impl Canvas {
         }
     }
 
-    pub fn pixel_at(&mut self, x: u16, y: u16) -> &Color {
+    pub fn pixel_at(&mut self, x: u16, y: u16) -> &Vec3A {
         if let Some(row) = self.pixels.get(y as usize) {
             if let Some(pixel) = row.get(x as usize) {
                 pixel
@@ -73,16 +73,16 @@ impl Canvas {
             self.width, self.height, total_pixels
         );
 
+        // TODO: Use image create directly instead of creating PPM string for better flexibility
         // FIXME: use .fold() instead of format!() - https://rust-lang.github.io/rust-clippy/master/index.html#/format_collect
         let ppm_data: String = self
             .pixels
             .par_iter()
-            .progress_count(total_pixels)
             .flatten()
             .map(|color| {
-                let r = (color.red * 255.0).round() as u8;
-                let g = (color.green * 255.0).round() as u8;
-                let b = (color.blue * 255.0).round() as u8;
+                let r = (color.get_red_val() * 255.0).round() as u8;
+                let g = (color.get_green_val() * 255.0).round() as u8;
+                let b = (color.get_blue_val() * 255.0).round() as u8;
                 format!("{r} {g} {b}",)
             })
             .collect::<Vec<String>>()

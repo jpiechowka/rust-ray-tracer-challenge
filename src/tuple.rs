@@ -1,143 +1,28 @@
 use approx::abs_diff_eq;
-use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
+use glam::Vec4;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct Tuple {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-    w: f64,
+pub trait Tuple {
+    fn new_point_tuple(x: f32, y: f32, z: f32) -> Self;
+    fn new_vector_tuple(x: f32, y: f32, z: f32) -> Self;
+    fn is_point_tuple(&self) -> bool;
+    fn is_vector_tuple(&self) -> bool;
 }
 
-impl Tuple {
-    pub fn new_point(x: f64, y: f64, z: f64) -> Self {
-        Self { x, y, z, w: 1.0 }
+impl Tuple for Vec4 {
+    fn new_point_tuple(x: f32, y: f32, z: f32) -> Self {
+        Vec4::new(x, y, z, 1.0)
     }
 
-    pub fn new_vector(x: f64, y: f64, z: f64) -> Self {
-        Self { x, y, z, w: 0.0 }
+    fn new_vector_tuple(x: f32, y: f32, z: f32) -> Self {
+        Vec4::new(x, y, z, 0.0)
     }
 
-    pub fn is_point(&self) -> bool {
-        abs_diff_eq!(self.w, 1.0)
+    fn is_point_tuple(&self) -> bool {
+        abs_diff_eq!(self.w, 1.0, epsilon = f32::EPSILON)
     }
 
-    pub fn is_vector(&self) -> bool {
-        abs_diff_eq!(self.w, 0.0)
-    }
-
-    pub fn magnitude(&self) -> f64 {
-        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2) + self.w.powi(2)).sqrt()
-    }
-
-    pub fn normalize(&self) -> Self {
-        let magnitude = self.magnitude();
-        Self {
-            x: self.x / magnitude,
-            y: self.y / magnitude,
-            z: self.z / magnitude,
-            w: self.w / magnitude,
-        }
-    }
-
-    pub fn dot_product(&self, other: &Tuple) -> f64 {
-        self.x * other.x + self.y * other.y + self.z * other.z + self.w * other.w
-    }
-
-    pub fn cross_product(&self, other: &Tuple) -> Self {
-        Self {
-            x: self.y * other.z - self.z * other.y,
-            y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x,
-            w: self.w, // Should always be 0. We care about three-dimensional cross product only
-        }
-    }
-}
-
-impl Add for Tuple {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-            w: self.w + other.w,
-        }
-    }
-}
-
-impl AddAssign for Tuple {
-    fn add_assign(&mut self, other: Self) {
-        *self = Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-            w: self.w + other.w,
-        };
-    }
-}
-
-impl Neg for Tuple {
-    type Output = Self;
-
-    fn neg(self) -> Self {
-        Self {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z,
-            w: -self.w,
-        }
-    }
-}
-
-impl Sub for Tuple {
-    type Output = Self;
-
-    fn sub(self, other: Self) -> Self {
-        Self {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-            w: self.w - other.w,
-        }
-    }
-}
-
-impl SubAssign for Tuple {
-    fn sub_assign(&mut self, other: Self) {
-        *self = Self {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-            w: self.w - other.w,
-        };
-    }
-}
-
-impl Mul<f64> for Tuple {
-    type Output = Self;
-
-    fn mul(self, rhs: f64) -> Self {
-        Self {
-            x: self.x * rhs,
-            y: self.y * rhs,
-            z: self.z * rhs,
-            w: self.w * rhs,
-        }
-    }
-}
-
-impl Div<f64> for Tuple {
-    type Output = Self;
-
-    fn div(self, rhs: f64) -> Self {
-        Self {
-            x: self.x / rhs,
-            y: self.y / rhs,
-            z: self.z / rhs,
-            w: self.w / rhs,
-        }
+    fn is_vector_tuple(&self) -> bool {
+        abs_diff_eq!(self.w, 0.0, epsilon = f32::EPSILON)
     }
 }
 
@@ -145,285 +30,191 @@ impl Div<f64> for Tuple {
 mod tests {
     use super::*;
     use approx::assert_abs_diff_eq;
+    use glam::Vec3A;
     use rstest::*;
 
     #[fixture]
-    pub fn tuple() -> Tuple {
-        Tuple {
-            x: 1.0,
-            y: -2.0,
-            z: 3.0,
-            w: -4.0,
-        }
+    pub fn tuple() -> Vec4 {
+        Vec4::new(1.0, -2.0, 3.0, -4.0)
     }
 
     #[fixture]
-    pub fn point() -> Tuple {
-        Tuple::new_point(1.0, -2.0, 3.0)
+    pub fn point() -> Vec4 {
+        Tuple::new_point_tuple(1.0, -2.0, 3.0)
     }
 
     #[fixture]
-    pub fn point2() -> Tuple {
-        Tuple::new_point(-2.0, 4.0, -6.0)
+    pub fn point2() -> Vec4 {
+        Tuple::new_point_tuple(-2.0, 4.0, -6.0)
     }
 
     #[fixture]
-    pub fn vector() -> Tuple {
-        Tuple::new_vector(1.0, -2.0, 3.0)
+    pub fn vector() -> Vec4 {
+        Tuple::new_vector_tuple(1.0, -2.0, 3.0)
     }
 
     #[fixture]
-    pub fn vector2() -> Tuple {
-        Tuple::new_vector(-2.0, 4.0, -6.0)
+    pub fn vector2() -> Vec4 {
+        Tuple::new_vector_tuple(-2.0, 4.0, -6.0)
     }
 
     #[rstest]
-    fn a_tuple_with_w_equal_to_1_is_a_point(point: Tuple) {
-        assert!(point.is_point());
-        assert!(!point.is_vector());
-        assert_eq!(point.x, 1.0);
-        assert_eq!(point.y, -2.0);
-        assert_eq!(point.z, 3.0);
-        assert_eq!(point.w, 1.0);
+    fn a_tuple_with_w_equal_to_1_is_a_point(point: Vec4) {
+        assert!(point.is_point_tuple());
+        assert!(!point.is_vector_tuple());
+        assert_abs_diff_eq!(point.x, 1.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(point.y, -2.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(point.z, 3.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(point.w, 1.0, epsilon = f32::EPSILON);
     }
 
     #[rstest]
-    fn a_tuple_with_w_equal_to_0_is_a_vector(vector: Tuple) {
-        assert!(vector.is_vector());
-        assert!(!vector.is_point());
-        assert_eq!(vector.x, 1.0);
-        assert_eq!(vector.y, -2.0);
-        assert_eq!(vector.z, 3.0);
-        assert_eq!(vector.w, 0.0);
+    fn a_tuple_with_w_equal_to_0_is_a_vector(vector: Vec4) {
+        assert!(vector.is_vector_tuple());
+        assert!(!vector.is_point_tuple());
+        assert_abs_diff_eq!(vector.x, 1.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(vector.y, -2.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(vector.z, 3.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(vector.w, 0.0, epsilon = f32::EPSILON);
     }
 
     #[rstest]
-    fn can_add_two_tuples(point: Tuple, vector: Tuple) {
+    fn can_add_two_tuples(point: Vec4, vector: Vec4) {
         let result = point + vector;
-        assert_eq!(
-            result,
-            Tuple {
-                x: 2.0,
-                y: -4.0,
-                z: 6.0,
-                w: 1.0
-            }
-        );
-        assert!(result.is_point());
-        assert!(!result.is_vector());
+        assert_eq!(result, Vec4::new(2.0, -4.0, 6.0, 1.0));
+        assert!(result.is_point_tuple());
+        assert!(!result.is_vector_tuple());
     }
 
     #[rstest]
-    fn can_add_assign_two_tuples(vector: Tuple) {
-        let mut result = Tuple::new_point(2.2, -3.3, 4.4);
+    fn can_add_assign_two_tuples(vector: Vec4) {
+        let mut result = Vec4::new_point_tuple(2.2, -3.3, 4.4);
         result += vector;
 
-        assert_eq!(
-            result,
-            Tuple {
-                x: 3.2,
-                y: -5.3,
-                z: 7.4,
-                w: 1.0
-            }
-        );
-        assert!(result.is_point());
-        assert!(!result.is_vector());
+        assert_eq!(result, Vec4::new(3.2, -5.3, 7.4, 1.0));
+        assert!(result.is_point_tuple());
+        assert!(!result.is_vector_tuple());
     }
 
     #[rstest]
-    fn can_subtract_two_points(point: Tuple, point2: Tuple) {
+    fn can_subtract_two_points(point: Vec4, point2: Vec4) {
         let result = point - point2;
-        assert_eq!(
-            result,
-            Tuple {
-                x: 3.0,
-                y: -6.0,
-                z: 9.0,
-                w: 0.0
-            }
-        );
-        assert!(!result.is_point());
-        assert!(result.is_vector());
+        assert_eq!(result, Vec4::new(3.0, -6.0, 9.0, 0.0));
+        assert!(!result.is_point_tuple());
+        assert!(result.is_vector_tuple());
     }
 
     #[rstest]
-    fn can_subtract_vector_from_a_point(point: Tuple, vector: Tuple) {
+    fn can_subtract_vector_from_a_point(point: Vec4, vector: Vec4) {
         let result = point - vector;
-        assert_eq!(
-            result,
-            Tuple {
-                x: 0.0,
-                y: 0.0,
-                z: 0.0,
-                w: 1.0
-            }
-        );
-        assert!(result.is_point());
-        assert!(!result.is_vector());
+        assert_eq!(result, Vec4::new(0.0, 0.0, 0.0, 1.0));
+        assert!(result.is_point_tuple());
+        assert!(!result.is_vector_tuple());
     }
 
     #[rstest]
-    fn can_subtract_two_vectors(vector: Tuple, vector2: Tuple) {
+    fn can_subtract_two_vectors(vector: Vec4, vector2: Vec4) {
         let result = vector - vector2;
-        assert_eq!(
-            result,
-            Tuple {
-                x: 3.0,
-                y: -6.0,
-                z: 9.0,
-                w: 0.0
-            }
-        );
-        assert!(!result.is_point());
-        assert!(result.is_vector());
+        assert_eq!(result, Vec4::new(3.0, -6.0, 9.0, 0.0));
+        assert!(!result.is_point_tuple());
+        assert!(result.is_vector_tuple());
     }
 
     #[rstest]
-    fn can_subtract_assign_two_vectors(vector: Tuple) {
-        let mut result = Tuple::new_vector(3.0, 6.6, 1.0);
+    fn can_subtract_assign_two_vectors(vector: Vec4) {
+        let mut result = Vec4::new_vector_tuple(3.0, 6.6, 1.0);
         result -= vector;
 
-        assert_eq!(
-            result,
-            Tuple {
-                x: 2.0,
-                y: 8.6,
-                z: -2.0,
-                w: 0.0
-            }
-        );
-        assert!(!result.is_point());
-        assert!(result.is_vector());
+        assert_eq!(result, Vec4::new(2.0, 8.6, -2.0, 0.0));
+        assert!(!result.is_point_tuple());
+        assert!(result.is_vector_tuple());
     }
 
     #[rstest]
-    fn can_negate_a_tuple(tuple: Tuple) {
-        assert_eq!(
-            -tuple,
-            Tuple {
-                x: -1.0,
-                y: 2.0,
-                z: -3.0,
-                w: 4.0
-            }
-        );
+    fn can_negate_a_tuple(tuple: Vec4) {
+        assert_eq!(-tuple, Vec4::new(-1.0, 2.0, -3.0, 4.0));
     }
 
     #[rstest]
-    fn can_multiply_a_tuple_by_a_scalar(tuple: Tuple) {
-        assert_eq!(
-            tuple * 3.5,
-            Tuple {
-                x: 3.5,
-                y: -7.0,
-                z: 10.5,
-                w: -14.0
-            }
-        );
-        assert_eq!(
-            tuple * -3.5,
-            Tuple {
-                x: -3.5,
-                y: 7.0,
-                z: -10.5,
-                w: 14.0
-            }
-        );
+    fn can_multiply_a_tuple_by_a_scalar(tuple: Vec4) {
+        assert_eq!(tuple * 3.5, Vec4::new(3.5, -7.0, 10.5, -14.0));
+        assert_eq!(tuple * -3.5, Vec4::new(-3.5, 7.0, -10.5, 14.0));
     }
 
     #[rstest]
-    fn can_multiply_a_tuple_by_a_fraction(tuple: Tuple) {
-        assert_eq!(
-            tuple * 0.5,
-            Tuple {
-                x: 0.5,
-                y: -1.0,
-                z: 1.5,
-                w: -2.0
-            }
-        );
-        assert_eq!(
-            tuple * -0.5,
-            Tuple {
-                x: -0.5,
-                y: 1.0,
-                z: -1.5,
-                w: 2.0
-            }
-        );
+    fn can_multiply_a_tuple_by_a_fraction(tuple: Vec4) {
+        assert_eq!(tuple * 0.5, Vec4::new(0.5, -1.0, 1.5, -2.0));
+        assert_eq!(tuple * -0.5, Vec4::new(-0.5, 1.0, -1.5, 2.0));
     }
 
     #[rstest]
-    fn can_divide_a_tuple_by_a_scalar(tuple: Tuple) {
-        assert_eq!(
-            tuple / 2.0,
-            Tuple {
-                x: 0.5,
-                y: -1.0,
-                z: 1.5,
-                w: -2.0
-            }
-        );
+    fn can_divide_a_tuple_by_a_scalar(tuple: Vec4) {
+        assert_eq!(tuple / 2.0, Vec4::new(0.5, -1.0, 1.5, -2.0));
     }
 
     #[rstest]
-    #[case::vector_x_is_1(Tuple::new_vector(1.0, 0.0, 0.0), 1.0)]
-    #[case::vector_y_is_1(Tuple::new_vector(0.0, 1.0, 0.0), 1.0)]
-    #[case::vector_z_is_1(Tuple::new_vector(0.0, 0.0, 1.0), 1.0)]
-    #[case::vector_with_positive_values(Tuple::new_vector(1.0, 2.0, 3.0), 14_f64.sqrt())]
-    #[case::vector_with_negative_values(Tuple::new_vector(-1.0, -2.0, -3.0), 14_f64.sqrt())]
-    #[case::vector_with_mixed_fractional_values(Tuple::new_vector(0.5, -1.5, 2.5), 8.75_f64.sqrt())]
+    #[case::vector_x_is_1(Tuple::new_vector_tuple(1.0, 0.0, 0.0), 1.0)]
+    #[case::vector_y_is_1(Tuple::new_vector_tuple(0.0, 1.0, 0.0), 1.0)]
+    #[case::vector_z_is_1(Tuple::new_vector_tuple(0.0, 0.0, 1.0), 1.0)]
+    #[case::vector_with_positive_values(Tuple::new_vector_tuple(1.0, 2.0, 3.0), 14_f32.sqrt())]
+    #[case::vector_with_negative_values(Tuple::new_vector_tuple(-1.0, -2.0, -3.0), 14_f32.sqrt())]
+    #[case::vector_with_mixed_fractional_values(Tuple::new_vector_tuple(0.5, -1.5, 2.5), 8.75_f32.sqrt())]
     fn can_calculate_magnitude_of_a_vector(
-        #[case] input_vector: Tuple,
-        #[case] expected_magnitude: f64,
+        #[case] input_vector: Vec4,
+        #[case] expected_magnitude: f32,
     ) {
-        assert_abs_diff_eq!(input_vector.magnitude(), expected_magnitude);
+        assert_eq!(input_vector.length(), expected_magnitude);
     }
 
     #[rstest]
-    #[case::vector_x_is_4(Tuple::new_vector(4.0, 0.0, 0.0), Tuple::new_vector(1.0, 0.0, 0.0))]
-    #[case::vector_1_2_3(Tuple::new_vector(1.0, 2.0, 3.0), Tuple::new_vector(1.0/14_f64.sqrt(), 2.0/14_f64.sqrt(), 3.0/14_f64.sqrt()))]
-    fn can_normalize_a_vector(#[case] input_vector: Tuple, #[case] expected_vector: Tuple) {
+    #[case::vector_x_is_4(
+        Tuple::new_vector_tuple(4.0, 0.0, 0.0),
+        Tuple::new_vector_tuple(1.0, 0.0, 0.0)
+    )]
+    #[case::vector_1_2_3(
+        Tuple::new_vector_tuple(1.0, 2.0, 3.0),
+        Tuple::new_vector_tuple(1.0/14_f32.sqrt(), 2.0/14_f32.sqrt(), 3.0/14_f32.sqrt())
+    )]
+    fn can_normalize_a_vector(#[case] input_vector: Vec4, #[case] expected_vector: Vec4) {
         let normalized_vector = input_vector.normalize();
-        assert_abs_diff_eq!(normalized_vector.x, expected_vector.x);
-        assert_abs_diff_eq!(normalized_vector.y, expected_vector.y);
-        assert_abs_diff_eq!(normalized_vector.z, expected_vector.z);
-        assert_abs_diff_eq!(normalized_vector.w, expected_vector.w);
+        assert!(normalized_vector.abs_diff_eq(expected_vector, f32::EPSILON))
     }
 
     #[rstest]
-    fn can_calculate_magnitude_of_a_normalized_vector(vector: Tuple) {
+    fn can_calculate_magnitude_of_a_normalized_vector(vector: Vec4) {
         let normalized_vector = vector.normalize();
-        assert_eq!(normalized_vector.magnitude(), 1.0);
+        assert_abs_diff_eq!(normalized_vector.length(), 1.0);
     }
 
     #[rstest]
-    fn can_calculate_dot_product_of_two_vectors(vector: Tuple, vector2: Tuple) {
-        assert_eq!(vector.dot_product(&vector2), -28.0);
+    fn can_calculate_dot_product_of_two_vectors(vector: Vec4, vector2: Vec4) {
+        assert_eq!(vector.dot(vector2), -28.0);
     }
 
     #[rstest]
     #[case::regular(
-        Tuple::new_vector(1.0, 2.0, 3.0),
-        Tuple::new_vector(2.0, 3.0, 4.0),
-        Tuple::new_vector(-1.0, 2.0, -1.0)
+        Tuple::new_vector_tuple(1.0, 2.0, 3.0),
+        Tuple::new_vector_tuple(2.0, 3.0, 4.0),
+        Tuple::new_vector_tuple(-1.0, 2.0, -1.0)
     )]
     #[case::reversed_order(
-        Tuple::new_vector(2.0, 3.0, 4.0),
-        Tuple::new_vector(1.0, 2.0, 3.0),
-        Tuple::new_vector(1.0, -2.0, 1.0)
+        Tuple::new_vector_tuple(2.0, 3.0, 4.0),
+        Tuple::new_vector_tuple(1.0, 2.0, 3.0),
+        Tuple::new_vector_tuple(1.0, -2.0, 1.0)
     )]
     #[case::with_negative_numbers(
-        Tuple::new_vector(3.0, 0.0, 2.0),
-        Tuple::new_vector(-1.0, 4.0, 2.0),
-        Tuple::new_vector(-8.0, -8.0, 12.0)
+        Tuple::new_vector_tuple(3.0, 0.0, 2.0),
+        Tuple::new_vector_tuple(-1.0, 4.0, 2.0),
+        Tuple::new_vector_tuple(-8.0, -8.0, 12.0)
     )]
     fn can_calculate_cross_product_of_two_vectors(
-        #[case] first_vector: Tuple,
-        #[case] second_vector: Tuple,
-        #[case] expected_vector: Tuple,
+        #[case] first_vector: Vec4,
+        #[case] second_vector: Vec4,
+        #[case] expected_vector: Vec4,
     ) {
-        assert_eq!(first_vector.cross_product(&second_vector), expected_vector);
+        let first_vec3 = Vec3A::from(first_vector);
+        let second_vec3 = Vec3A::from(second_vector);
+        let expected_vec3 = Vec3A::from(expected_vector);
+        assert_eq!(first_vec3.cross(second_vec3), expected_vec3);
     }
 }

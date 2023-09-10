@@ -1,4 +1,5 @@
 use env_logger::Env;
+use glam::Vec4;
 use log::{debug, info};
 use raytracer::{canvas::Canvas, color::Color, tuple::Tuple};
 
@@ -9,14 +10,14 @@ const PNG_FILE_PATH: &str = "projectile.png";
 
 #[derive(Debug)]
 struct Environment {
-    gravity: Tuple, // A vector
-    wind: Tuple,    // A vector
+    gravity: Vec4, // A vector
+    wind: Vec4,    // A vector
 }
 
 #[derive(Debug)]
 struct Projectile {
-    position: Tuple, // A point
-    velocity: Tuple, // A vector
+    position: Vec4, // A point
+    velocity: Vec4, // A vector
 }
 
 fn tick(env: &Environment, proj: &Projectile) -> Projectile {
@@ -37,13 +38,13 @@ fn main() {
     let mut canvas = Canvas::new_black_canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
     let mut projectile = Projectile {
-        position: Tuple::new_point(0.0, 1.0, 0.0),
-        velocity: Tuple::new_vector(1.0, 1.8, 0.0).normalize() * 11.25,
+        position: Vec4::new_point_tuple(0.0, 1.0, 0.0),
+        velocity: Vec4::new_vector_tuple(1.0, 1.8, 0.0).normalize() * 11.25,
     };
 
     let environment = Environment {
-        gravity: Tuple::new_vector(0.0, -0.1, 0.0),
-        wind: Tuple::new_vector(-0.01, 0.0, 0.0),
+        gravity: Vec4::new_vector_tuple(0.0, -0.1, 0.0),
+        wind: Vec4::new_vector_tuple(-0.01, 0.0, 0.0),
     };
 
     // Canvas coordinates are 0 indexed (so for 550 height we use 0-549 inclusive)
@@ -53,14 +54,14 @@ fn main() {
         .position
         .x
         .round()
-        .clamp(0.0, (CANVAS_WIDTH - 1) as f64) as u16;
+        .clamp(0.0, (CANVAS_WIDTH - 1) as f32) as u16;
 
     // Y coordinate is upside-down on canvas
     let mut proj_y = projectile
         .position
         .y
         .round()
-        .clamp(1.0, CANVAS_HEIGHT as f64) as u16;
+        .clamp(1.0, CANVAS_HEIGHT as f32) as u16;
     let mut proj_y_flipped = CANVAS_HEIGHT - proj_y;
 
     canvas.write_pixel(proj_x, proj_y_flipped, Color::new_red());
@@ -72,12 +73,12 @@ fn main() {
             .position
             .x
             .round()
-            .clamp(0.0, (CANVAS_WIDTH - 1) as f64) as u16;
+            .clamp(0.0, (CANVAS_WIDTH - 1) as f32) as u16;
         proj_y = projectile
             .position
             .y
             .round()
-            .clamp(1.0, CANVAS_HEIGHT as f64) as u16;
+            .clamp(1.0, CANVAS_HEIGHT as f32) as u16;
         proj_y_flipped = CANVAS_HEIGHT - proj_y;
 
         canvas.write_pixel(proj_x, proj_y_flipped, Color::new_green());
