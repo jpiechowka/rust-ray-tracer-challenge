@@ -1,5 +1,9 @@
 # Rust ray tracer challenge
-Rust ray tracer implementation, based on The Ray Tracer Challenge book by Jamis Buck.
+Rust ray tracer implementation, based on The Ray Tracer Challenge book by Jamis Buck. Relies heavily on the `glam` crate for linear algebra (https://github.com/bitshifter/glam-rs).
+
+* Progress tracker based on the book chapters: [here](#progress-tracker-based-on-the-book-chapters)
+
+* Gallery: [here](#gallery)
 
 ## Building
 
@@ -37,7 +41,7 @@ To run examples execute the following command:
 cargo run --release --example {example_name}
 ```
 
-For example to run projectile example run:
+For example to run projectile example execute the following command:
 
 ```
 cargo run --release --example projectile
