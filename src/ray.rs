@@ -13,6 +13,10 @@ impl Ray {
             direction_vector,
         }
     }
+
+    pub fn position(&self, time: f32) -> Vec3A {
+        self.origin_point + self.direction_vector * time
+    }
 }
 
 #[cfg(test)]
@@ -34,5 +38,41 @@ mod tests {
         assert_abs_diff_eq!(ray.direction_vector.x, 4.0, epsilon = f32::EPSILON);
         assert_abs_diff_eq!(ray.direction_vector.y, 5.0, epsilon = f32::EPSILON);
         assert_abs_diff_eq!(ray.direction_vector.z, 6.0, epsilon = f32::EPSILON);
+    }
+
+    #[rstest]
+    #[case(
+        Ray::new(Vec3A::new(2.0, 3.0, 4.0), Vec3A::new(1.0, 0.0, 0.0)),
+        0.0,
+        Vec3A::new(2.0, 3.0, 4.0)
+    )]
+    #[case(
+        Ray::new(Vec3A::new(2.0, 3.0, 4.0), Vec3A::new(1.0, 0.0, 0.0)),
+        1.0,
+        Vec3A::new(3.0, 3.0, 4.0)
+    )]
+    #[case(
+        Ray::new(Vec3A::new(2.0, 3.0, 4.0), Vec3A::new(1.0, 0.0, 0.0)),
+        -1.0,
+        Vec3A::new(1.0, 3.0, 4.0)
+    )]
+    #[case(
+        Ray::new(Vec3A::new(2.0, 3.0, 4.0), Vec3A::new(1.0, 0.0, 0.0)),
+        2.5,
+        Vec3A::new(4.5, 3.0, 4.0)
+    )]
+    #[case(
+        Ray::new(Vec3A::new(2.0, 3.0, 4.0), Vec3A::new(3.0, 2.0, 1.0)),
+        1.5,
+        Vec3A::new(6.5, 6.0, 5.5)
+    )]
+    fn can_compute_a_point_from_distance(
+        #[case] input_ray: Ray,
+        #[case] time: f32,
+        #[case] expected_point: Vec3A,
+    ) {
+        assert!(input_ray
+            .position(time)
+            .abs_diff_eq(expected_point, f32::EPSILON))
     }
 }
