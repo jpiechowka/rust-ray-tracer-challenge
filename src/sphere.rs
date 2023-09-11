@@ -1,52 +1,56 @@
-use crate::ray::Ray;
+use crate::{intersection::Intersection, ray::Ray};
 use glam::Vec3A;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 // TODO: Maybe a better solution for sphere id? They need to be unique and UUID seems excessive
 static SPHERE_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
 
-// Sphere can intersect in max two points
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub struct SphereIntersection {
-    t1: Option<f32>,
-    t2: Option<f32>,
-}
-
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
     sphere_center_point: Vec3A,
-    id: u64,
+    id: String,
 }
 
 impl Sphere {
     pub fn new(sphere_center_point: Vec3A) -> Self {
+        let sphere_id = format!(
+            "sphere-{}",
+            SPHERE_ID_COUNTER.fetch_add(1, Ordering::Relaxed)
+        );
+
         Self {
             sphere_center_point,
-            id: SPHERE_ID_COUNTER.fetch_add(1, Ordering::Relaxed),
+            id: sphere_id,
         }
     }
 
-    pub fn intersect(&self, ray: Ray) -> SphereIntersection {
+    pub fn intersect(&self, ray: Ray) -> Intersection {
         let sphere_to_ray = ray.origin_point - self.sphere_center_point;
         let a = ray.direction_vector.dot(ray.direction_vector);
         let b = 2.0 * ray.direction_vector.dot(sphere_to_ray);
         let c = sphere_to_ray.dot(sphere_to_ray) - 1.0;
         let discriminant = b.powi(2) - 4.0 * a * c;
         if discriminant < 0.0 {
-            SphereIntersection { t1: None, t2: None }
+            Intersection {
+                t1: None,
+                t2: None,
+                object_id: &self.id,
+            }
         } else {
             let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
             let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
             // Return in increasing order, the smallest value first
             if t1 < t2 {
-                SphereIntersection {
+                Intersection {
                     t1: Some(t1),
                     t2: Some(t2),
+                    object_id: &self.id,
                 }
             } else {
-                SphereIntersection {
+                Intersection {
                     t1: Some(t2),
                     t2: Some(t1),
+                    object_id: &self.id,
                 }
             }
         }
@@ -66,6 +70,9 @@ mod tests {
         assert_ne!(s1.id, s2.id);
         assert_ne!(s1.id, s3.id);
         assert_ne!(s2.id, s3.id);
+        assert!(s1.id.starts_with("sphere-"));
+        assert!(s2.id.starts_with("sphere-"));
+        assert!(s3.id.starts_with("sphere-"));
     }
 
     #[test]
