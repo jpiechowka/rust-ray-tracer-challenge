@@ -2,8 +2,8 @@ use glam::Vec3A;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Ray {
-    origin_point: Vec3A,
-    direction_vector: Vec3A,
+    pub origin_point: Vec3A,
+    pub direction_vector: Vec3A,
 }
 
 impl Ray {
