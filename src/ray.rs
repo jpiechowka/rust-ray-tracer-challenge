@@ -73,6 +73,6 @@ mod tests {
     ) {
         assert!(input_ray
             .position(time)
-            .abs_diff_eq(expected_point, f32::EPSILON))
+            .abs_diff_eq(expected_point, f32::EPSILON));
     }
 }
