@@ -7,8 +7,8 @@ static SPHERE_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Sphere {
+    pub id: String,
     sphere_center_point: Vec3A,
-    id: String,
 }
 
 impl Sphere {
@@ -32,26 +32,16 @@ impl Sphere {
         let discriminant = b.powi(2) - 4.0 * a * c;
         if discriminant < 0.0 {
             Intersection {
-                t1: None,
-                t2: None,
                 object_id: &self.id,
+                t: Vec::new(), // empty
             }
         } else {
             let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
             let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
             // Return in increasing order, the smallest value first
-            if t1 < t2 {
-                Intersection {
-                    t1: Some(t1),
-                    t2: Some(t2),
-                    object_id: &self.id,
-                }
-            } else {
-                Intersection {
-                    t1: Some(t2),
-                    t2: Some(t1),
-                    object_id: &self.id,
-                }
+            Intersection {
+                object_id: &self.id,
+                t: if t1 < t2 { vec![t1, t2] } else { vec![t2, t1] },
             }
         }
     }
@@ -80,20 +70,13 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 0.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
+        assert_eq!(intersection.t.len(), 2);
         assert_abs_diff_eq!(
-            intersection
-                .t1
-                .expect("first intersection value should not be None"),
+            *intersection.t.first().unwrap(),
             4.0,
             epsilon = f32::EPSILON
         );
-        assert_abs_diff_eq!(
-            intersection
-                .t2
-                .expect("second intersection value should not be None"),
-            6.0,
-            epsilon = f32::EPSILON
-        );
+        assert_abs_diff_eq!(*intersection.t.get(1).unwrap(), 6.0, epsilon = f32::EPSILON);
     }
 
     #[test]
@@ -101,20 +84,13 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 1.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
+        assert_eq!(intersection.t.len(), 2);
         assert_abs_diff_eq!(
-            intersection
-                .t1
-                .expect("first intersection value should not be None"),
+            *intersection.t.first().unwrap(),
             5.0,
             epsilon = f32::EPSILON
         );
-        assert_abs_diff_eq!(
-            intersection
-                .t2
-                .expect("second intersection value should not be None"),
-            5.0,
-            epsilon = f32::EPSILON
-        );
+        assert_abs_diff_eq!(*intersection.t.get(1).unwrap(), 5.0, epsilon = f32::EPSILON);
     }
 
     #[test]
@@ -122,8 +98,7 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 2.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
-        assert!(intersection.t1.is_none());
-        assert!(intersection.t2.is_none());
+        assert_eq!(intersection.t.len(), 0);
     }
 
     #[test]
@@ -131,20 +106,13 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 0.0, 0.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
+        assert_eq!(intersection.t.len(), 2);
         assert_abs_diff_eq!(
-            intersection
-                .t1
-                .expect("first intersection value should not be None"),
+            *intersection.t.first().unwrap(),
             -1.0,
             epsilon = f32::EPSILON
         );
-        assert_abs_diff_eq!(
-            intersection
-                .t2
-                .expect("second intersection value should not be None"),
-            1.0,
-            epsilon = f32::EPSILON
-        );
+        assert_abs_diff_eq!(*intersection.t.get(1).unwrap(), 1.0, epsilon = f32::EPSILON);
     }
 
     #[test]
@@ -152,17 +120,14 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 0.0, 5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
+        assert_eq!(intersection.t.len(), 2);
         assert_abs_diff_eq!(
-            intersection
-                .t1
-                .expect("first intersection value should not be None"),
+            *intersection.t.first().unwrap(),
             -6.0,
             epsilon = f32::EPSILON
         );
         assert_abs_diff_eq!(
-            intersection
-                .t2
-                .expect("second intersection value should not be None"),
+            *intersection.t.get(1).unwrap(),
             -4.0,
             epsilon = f32::EPSILON
         );
