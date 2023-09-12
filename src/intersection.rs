@@ -1,4 +1,4 @@
-use rayon::prelude::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Intersection<'a> {
