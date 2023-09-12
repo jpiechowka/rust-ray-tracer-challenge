@@ -1,3 +1,5 @@
+use rayon::prelude::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Intersection<'a> {
     pub t: f32,
@@ -12,6 +14,11 @@ impl<'a> Intersection<'a> {
 
 pub fn aggregate_and_sort_intersections_in_place(intersections: &mut [Intersection]) {
     intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap())
+}
+
+/// Hit returns lowest non-negative intersection. Assumes that intersections are sorted.
+pub fn hit<'a>(intersections: &'a [Intersection<'a>]) -> Option<&Intersection<'a>> {
+    intersections.par_iter().find_first(|i| i.t >= 0.0)
 }
 
 #[cfg(test)]
@@ -58,5 +65,51 @@ mod tests {
         assert_eq!(i2.len(), 2);
         assert_eq!(i2.first().unwrap().object_id, &s2.id);
         assert_eq!(i2.get(1).unwrap().object_id, &s2.id);
+    }
+
+    #[test]
+    fn the_hit_when_all_intersections_have_positive_t() {
+        let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
+        let i1 = Intersection::new(1.0, &sphere.id);
+        let i2 = Intersection::new(2.0, &sphere.id);
+        let mut aggregated_intersections = vec![i1, i2];
+        aggregate_and_sort_intersections_in_place(&mut aggregated_intersections);
+        let hit = hit(&aggregated_intersections);
+        assert_eq!(*hit.unwrap(), i1);
+    }
+
+    #[test]
+    fn the_hit_when_some_intersections_have_positive_t() {
+        let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
+        let i1 = Intersection::new(-1.0, &sphere.id);
+        let i2 = Intersection::new(1.0, &sphere.id);
+        let mut aggregated_intersections = vec![i1, i2];
+        aggregate_and_sort_intersections_in_place(&mut aggregated_intersections);
+        let hit = hit(&aggregated_intersections);
+        assert_eq!(*hit.unwrap(), i2);
+    }
+
+    #[test]
+    fn the_hit_when_all_intersections_have_negative_t() {
+        let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
+        let i1 = Intersection::new(-2.0, &sphere.id);
+        let i2 = Intersection::new(-1.0, &sphere.id);
+        let mut aggregated_intersections = vec![i1, i2];
+        aggregate_and_sort_intersections_in_place(&mut aggregated_intersections);
+        let hit = hit(&aggregated_intersections);
+        assert!(hit.is_none());
+    }
+
+    #[test]
+    fn the_hit_is_always_the_lowest_nonnegative_intersection() {
+        let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
+        let i1 = Intersection::new(5.0, &sphere.id);
+        let i2 = Intersection::new(7.0, &sphere.id);
+        let i3 = Intersection::new(-3.0, &sphere.id);
+        let i4 = Intersection::new(2.0, &sphere.id);
+        let mut aggregated_intersections = vec![i1, i2, i3, i4];
+        aggregate_and_sort_intersections_in_place(&mut aggregated_intersections);
+        let hit = hit(&aggregated_intersections);
+        assert_eq!(*hit.unwrap(), i4);
     }
 }
