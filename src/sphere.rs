@@ -1,6 +1,8 @@
-use crate::{intersection::SingleIntersection, ray::Ray};
-use glam::Vec3A;
 use std::sync::atomic::{AtomicU64, Ordering};
+
+use glam::Vec3A;
+
+use crate::{intersection::SingleIntersection, ray::Ray};
 
 // TODO: Maybe a better solution for sphere id? They need to be unique and UUID seems excessive
 static SPHERE_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -54,8 +56,9 @@ impl Sphere {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use approx::assert_abs_diff_eq;
+
+    use super::*;
 
     #[test]
     fn multiple_spheres_have_unique_ids() {

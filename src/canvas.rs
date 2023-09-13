@@ -1,8 +1,10 @@
-use crate::color::Color;
+use std::{fs, io::Cursor};
+
 use image::io::Reader as ImageReader;
 use log::{debug, info};
 use rayon::prelude::*;
-use std::{fs, io::Cursor};
+
+use crate::color::Color;
 
 #[derive(Debug)]
 pub struct Canvas {
@@ -147,8 +149,9 @@ impl Canvas {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rstest::*;
+
+    use super::*;
 
     #[fixture]
     pub fn canvas() -> Canvas {

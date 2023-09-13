@@ -111,9 +111,10 @@ impl Mul<f32> for Color {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use approx::assert_abs_diff_eq;
     use rstest::*;
+
+    use super::*;
 
     #[fixture]
     pub fn color() -> Color {

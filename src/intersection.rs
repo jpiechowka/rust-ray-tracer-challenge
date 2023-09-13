@@ -45,11 +45,12 @@ impl<'a> Intersections<'a> {
 
 #[cfg(test)]
 mod tests {
+    use approx::assert_abs_diff_eq;
+    use glam::Vec3A;
+
     use crate::{ray::Ray, sphere::Sphere};
 
     use super::*;
-    use approx::assert_abs_diff_eq;
-    use glam::Vec3A;
 
     #[test]
     fn an_intersection_encapsulates_t_and_object() {

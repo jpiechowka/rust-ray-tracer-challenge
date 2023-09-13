@@ -1,4 +1,4 @@
-use glam::Vec3A;
+use glam::{Affine3A, Vec3A};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Ray {
@@ -17,13 +17,22 @@ impl Ray {
     pub fn position(&self, time: f32) -> Vec3A {
         self.origin_point + self.direction_vector * time
     }
+
+    pub fn transform(&self, transformation: Affine3A) -> Self {
+        // TODO: check if right
+        Self {
+            origin_point: transformation.transform_point3a(self.origin_point),
+            direction_vector: transformation.transform_vector3a(self.direction_vector),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use approx::assert_abs_diff_eq;
     use rstest::*;
+
+    use super::*;
 
     #[fixture]
     pub fn ray() -> Ray {
