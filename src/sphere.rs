@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, ray::Ray};
+use crate::{intersection::SingleIntersection, ray::Ray};
 use glam::Vec3A;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -24,7 +24,7 @@ impl Sphere {
         }
     }
 
-    pub fn intersect(&self, ray: Ray) -> Vec<Intersection> {
+    pub fn intersect(&self, ray: Ray) -> Vec<SingleIntersection> {
         let sphere_to_ray = ray.origin_point - self.sphere_center_point;
         let a = ray.direction_vector.dot(ray.direction_vector);
         let b = 2.0 * ray.direction_vector.dot(sphere_to_ray);
@@ -35,11 +35,11 @@ impl Sphere {
         } else {
             let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
             let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
-            let i1 = Intersection {
+            let i1 = SingleIntersection {
                 object_id: &self.id,
                 t: t1,
             };
-            let i2 = Intersection {
+            let i2 = SingleIntersection {
                 object_id: &self.id,
                 t: t2,
             };
