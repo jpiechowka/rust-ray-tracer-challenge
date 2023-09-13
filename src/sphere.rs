@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use glam::Vec3A;
+use glam::{Affine3A, Vec3A};
 
 use crate::{intersection::SingleIntersection, ray::Ray};
 
@@ -11,6 +11,7 @@ static SPHERE_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
 pub struct Sphere {
     pub id: String,
     sphere_center_point: Vec3A,
+    transform: Affine3A,
 }
 
 impl Sphere {
@@ -23,13 +24,17 @@ impl Sphere {
         Self {
             sphere_center_point,
             id: sphere_id,
+            transform: Affine3A::default(),
         }
     }
 
     pub fn intersect(&self, ray: Ray) -> Vec<SingleIntersection> {
-        let sphere_to_ray = ray.origin_point - self.sphere_center_point;
-        let a = ray.direction_vector.dot(ray.direction_vector);
-        let b = 2.0 * ray.direction_vector.dot(sphere_to_ray);
+        let ray_inverse = ray.transform(self.transform.inverse());
+        let sphere_to_ray = ray_inverse.origin_point - self.sphere_center_point;
+        let a = ray_inverse
+            .direction_vector
+            .dot(ray_inverse.direction_vector);
+        let b = 2.0 * ray_inverse.direction_vector.dot(sphere_to_ray);
         let c = sphere_to_ray.dot(sphere_to_ray) - 1.0;
         let discriminant = b.powi(2) - 4.0 * a * c;
         if discriminant < 0.0 {
@@ -52,11 +57,16 @@ impl Sphere {
             sphere_intersections
         }
     }
+
+    pub fn set_transform(&mut self, transform: Affine3A) {
+        self.transform = transform
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
+    use glam::Vec3;
 
     use super::*;
 
@@ -127,5 +137,41 @@ mod tests {
             epsilon = f32::EPSILON
         );
         assert_abs_diff_eq!(intersection.get(1).unwrap().t, -4.0, epsilon = f32::EPSILON);
+    }
+
+    #[test]
+    fn new_sphere_has_default_transform() {
+        let sphere = Sphere::new(Vec3A::new(1.0, 2.0, 3.0));
+        assert_eq!(sphere.transform, Affine3A::IDENTITY);
+    }
+
+    #[test]
+    fn can_change_spheres_transformation() {
+        let mut sphere = Sphere::new(Vec3A::new(1.0, 2.0, 3.0));
+        let translation = Affine3A::from_translation(Vec3::new(2.0, 3.0, 4.0));
+        sphere.set_transform(translation);
+        assert_eq!(sphere.transform, translation);
+    }
+
+    #[test]
+    fn intersecting_a_scaled_sphere_with_a_ray() {
+        let ray = Ray::new(Vec3A::new(0.0, 0.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
+        let mut sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
+        let scaling = Affine3A::from_scale(Vec3::new(2.0, 2.0, 2.0));
+        sphere.set_transform(scaling);
+        let intersection = sphere.intersect(ray);
+        assert_eq!(intersection.len(), 2);
+        assert_abs_diff_eq!(intersection.first().unwrap().t, 3.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(intersection.get(1).unwrap().t, 7.0, epsilon = f32::EPSILON);
+    }
+
+    #[test]
+    fn intersecting_a_translated_sphere_with_a_ray() {
+        let ray = Ray::new(Vec3A::new(0.0, 0.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
+        let mut sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
+        let translation = Affine3A::from_translation(Vec3::new(5.0, 0.0, 0.0));
+        sphere.set_transform(translation);
+        let intersection = sphere.intersect(ray);
+        assert_eq!(intersection.len(), 0);
     }
 }
