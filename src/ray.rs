@@ -30,6 +30,7 @@ impl Ray {
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
+    use glam::Vec3;
     use rstest::*;
 
     use super::*;
@@ -37,6 +38,11 @@ mod tests {
     #[fixture]
     pub fn ray() -> Ray {
         Ray::new(Vec3A::new(1.0, 2.0, 3.0), Vec3A::new(4.0, 5.0, 6.0))
+    }
+
+    #[fixture]
+    pub fn ray2() -> Ray {
+        Ray::new(Vec3A::new(1.0, 2.0, 3.0), Vec3A::new(0.0, 1.0, 0.0))
     }
 
     #[rstest]
@@ -83,5 +89,29 @@ mod tests {
         assert!(input_ray
             .position(time)
             .abs_diff_eq(expected_point, f32::EPSILON));
+    }
+
+    #[rstest]
+    fn can_translate_a_ray(ray2: Ray) {
+        let translation = Affine3A::from_translation(Vec3::new(3.0, 4.0, 5.0));
+        let transformed = ray2.transform(translation);
+        assert!(transformed
+            .origin_point
+            .abs_diff_eq(Vec3A::new(4.0, 6.0, 8.0), f32::EPSILON));
+        assert!(transformed
+            .direction_vector
+            .abs_diff_eq(Vec3A::new(0.0, 1.0, 0.0), f32::EPSILON));
+    }
+
+    #[rstest]
+    fn can_scale_a_ray(ray2: Ray) {
+        let scale = Affine3A::from_scale(Vec3::new(2.0, 3.0, 4.0));
+        let transformed = ray2.transform(scale);
+        assert!(transformed
+            .origin_point
+            .abs_diff_eq(Vec3A::new(2.0, 6.0, 12.0), f32::EPSILON));
+        assert!(transformed
+            .direction_vector
+            .abs_diff_eq(Vec3A::new(0.0, 3.0, 0.0), f32::EPSILON));
     }
 }
