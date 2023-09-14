@@ -2,6 +2,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use glam::{Affine3A, Vec3A};
 
+use crate::intersection::Intersections;
 use crate::{intersection::SingleIntersection, ray::Ray};
 
 // TODO: Maybe a better solution for sphere id? They need to be unique and UUID seems excessive
@@ -28,7 +29,7 @@ impl Sphere {
         }
     }
 
-    pub fn intersect(&self, ray: Ray) -> Vec<SingleIntersection> {
+    pub fn intersect(&self, ray: Ray) -> Intersections {
         let ray_inverse = ray.transform(self.transform.inverse());
         let sphere_to_ray = ray_inverse.origin_point - self.sphere_center_point;
         let a = ray_inverse
@@ -38,7 +39,7 @@ impl Sphere {
         let c = sphere_to_ray.dot(sphere_to_ray) - 1.0;
         let discriminant = b.powi(2) - 4.0 * a * c;
         if discriminant < 0.0 {
-            vec![]
+            Intersections::new(vec![])
         } else {
             let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
             let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
@@ -50,11 +51,8 @@ impl Sphere {
                 object_id: &self.id,
                 t: t2,
             };
-            let mut sphere_intersections = vec![i1, i2];
 
-            // Return in increasing order, the smallest value first
-            sphere_intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
-            sphere_intersections
+            Intersections::new(vec![i1, i2])
         }
     }
 
@@ -88,9 +86,17 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 0.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
-        assert_eq!(intersection.len(), 2);
-        assert_abs_diff_eq!(intersection.first().unwrap().t, 4.0, epsilon = f32::EPSILON);
-        assert_abs_diff_eq!(intersection.get(1).unwrap().t, 6.0, epsilon = f32::EPSILON);
+        assert_eq!(intersection.i.len(), 2);
+        assert_abs_diff_eq!(
+            intersection.i.first().unwrap().t,
+            4.0,
+            epsilon = f32::EPSILON
+        );
+        assert_abs_diff_eq!(
+            intersection.i.get(1).unwrap().t,
+            6.0,
+            epsilon = f32::EPSILON
+        );
     }
 
     #[test]
@@ -98,9 +104,17 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 1.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
-        assert_eq!(intersection.len(), 2);
-        assert_abs_diff_eq!(intersection.first().unwrap().t, 5.0, epsilon = f32::EPSILON);
-        assert_abs_diff_eq!(intersection.get(1).unwrap().t, 5.0, epsilon = f32::EPSILON);
+        assert_eq!(intersection.i.len(), 2);
+        assert_abs_diff_eq!(
+            intersection.i.first().unwrap().t,
+            5.0,
+            epsilon = f32::EPSILON
+        );
+        assert_abs_diff_eq!(
+            intersection.i.get(1).unwrap().t,
+            5.0,
+            epsilon = f32::EPSILON
+        );
     }
 
     #[test]
@@ -108,7 +122,7 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 2.0, -5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
-        assert_eq!(intersection.len(), 0);
+        assert_eq!(intersection.i.len(), 0);
     }
 
     #[test]
@@ -116,13 +130,17 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 0.0, 0.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
-        assert_eq!(intersection.len(), 2);
+        assert_eq!(intersection.i.len(), 2);
         assert_abs_diff_eq!(
-            intersection.first().unwrap().t,
+            intersection.i.first().unwrap().t,
             -1.0,
             epsilon = f32::EPSILON
         );
-        assert_abs_diff_eq!(intersection.get(1).unwrap().t, 1.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(
+            intersection.i.get(1).unwrap().t,
+            1.0,
+            epsilon = f32::EPSILON
+        );
     }
 
     #[test]
@@ -130,13 +148,17 @@ mod tests {
         let ray = Ray::new(Vec3A::new(0.0, 0.0, 5.0), Vec3A::new(0.0, 0.0, 1.0));
         let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
         let intersection = sphere.intersect(ray);
-        assert_eq!(intersection.len(), 2);
+        assert_eq!(intersection.i.len(), 2);
         assert_abs_diff_eq!(
-            intersection.first().unwrap().t,
+            intersection.i.first().unwrap().t,
             -6.0,
             epsilon = f32::EPSILON
         );
-        assert_abs_diff_eq!(intersection.get(1).unwrap().t, -4.0, epsilon = f32::EPSILON);
+        assert_abs_diff_eq!(
+            intersection.i.get(1).unwrap().t,
+            -4.0,
+            epsilon = f32::EPSILON
+        );
     }
 
     #[test]
@@ -160,9 +182,17 @@ mod tests {
         let scaling = Affine3A::from_scale(Vec3::new(2.0, 2.0, 2.0));
         sphere.set_transform(scaling);
         let intersection = sphere.intersect(ray);
-        assert_eq!(intersection.len(), 2);
-        assert_abs_diff_eq!(intersection.first().unwrap().t, 3.0, epsilon = f32::EPSILON);
-        assert_abs_diff_eq!(intersection.get(1).unwrap().t, 7.0, epsilon = f32::EPSILON);
+        assert_eq!(intersection.i.len(), 2);
+        assert_abs_diff_eq!(
+            intersection.i.first().unwrap().t,
+            3.0,
+            epsilon = f32::EPSILON
+        );
+        assert_abs_diff_eq!(
+            intersection.i.get(1).unwrap().t,
+            7.0,
+            epsilon = f32::EPSILON
+        );
     }
 
     #[test]
@@ -172,6 +202,6 @@ mod tests {
         let translation = Affine3A::from_translation(Vec3::new(5.0, 0.0, 0.0));
         sphere.set_transform(translation);
         let intersection = sphere.intersect(ray);
-        assert_eq!(intersection.len(), 0);
+        assert_eq!(intersection.i.len(), 0);
     }
 }

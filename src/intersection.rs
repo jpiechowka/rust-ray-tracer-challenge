@@ -83,12 +83,12 @@ mod tests {
         let s2 = Sphere::new(Vec3A::new(0.0, 1.0, 0.0));
         let i1 = s1.intersect(r1);
         let i2 = s2.intersect(r2);
-        assert_eq!(i1.len(), 2);
-        assert_eq!(i1.first().unwrap().object_id, &s1.id);
-        assert_eq!(i1.get(1).unwrap().object_id, &s1.id);
-        assert_eq!(i2.len(), 2);
-        assert_eq!(i2.first().unwrap().object_id, &s2.id);
-        assert_eq!(i2.get(1).unwrap().object_id, &s2.id);
+        assert_eq!(i1.i.len(), 2);
+        assert_eq!(i1.i.first().unwrap().object_id, &s1.id);
+        assert_eq!(i1.i.get(1).unwrap().object_id, &s1.id);
+        assert_eq!(i2.i.len(), 2);
+        assert_eq!(i2.i.first().unwrap().object_id, &s2.id);
+        assert_eq!(i2.i.get(1).unwrap().object_id, &s2.id);
     }
 
     #[test]
