@@ -1,9 +1,8 @@
-use std::f32::consts::PI;
-
 use env_logger::Env;
 use glam::{Affine3A, Vec3A};
 use log::{debug, info};
 use raytracer::{canvas::Canvas, color::Color};
+use std::f32::consts::PI;
 
 const CANVAS_WIDTH: u16 = 800;
 const CANVAS_HEIGHT: u16 = 800;

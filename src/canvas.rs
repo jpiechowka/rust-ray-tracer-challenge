@@ -1,8 +1,10 @@
-use crate::color::Color;
+use std::{fs, io::Cursor};
+
 use image::io::Reader as ImageReader;
 use log::{debug, info};
 use rayon::prelude::*;
-use std::{fs, io::Cursor};
+
+use crate::color::Color;
 
 #[derive(Debug)]
 pub struct Canvas {
@@ -86,6 +88,7 @@ impl Canvas {
             self.width, self.height, total_pixels
         );
 
+        // TODO: Add associated function to rotate canvas along y axis
         // TODO: Use image create directly instead of creating PPM string for better flexibility
         // FIXME: use .fold() instead of format!() - https://rust-lang.github.io/rust-clippy/master/index.html#/format_collect
         let ppm_data: String = self
@@ -146,8 +149,9 @@ impl Canvas {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rstest::*;
+
+    use super::*;
 
     #[fixture]
     pub fn canvas() -> Canvas {

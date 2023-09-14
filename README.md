@@ -1,5 +1,9 @@
 # Rust ray tracer challenge
-Rust ray tracer implementation, based on The Ray Tracer Challenge book by Jamis Buck.
+Rust ray tracer implementation, based on The Ray Tracer Challenge book by Jamis Buck (https://pragprog.com/titles/jbtracer/the-ray-tracer-challenge). Relies heavily on the `glam` crate for linear algebra (https://github.com/bitshifter/glam-rs).
+
+* Progress tracker based on the book chapters: [here](#progress-tracker-based-on-the-book-chapters)
+
+* Gallery: [here](#gallery)
 
 ## Building
 
@@ -37,7 +41,7 @@ To run examples execute the following command:
 cargo run --release --example {example_name}
 ```
 
-For example to run projectile example run:
+For example to run projectile example execute the following command:
 
 ```
 cargo run --release --example projectile
@@ -59,7 +63,7 @@ Currently the following features (or code) are implemented:
 - [X] Chapter 02: Drawing on a Canvas
 - [X] Chapter 03: Matrices
 - [X] Chapter 04: Matrix Transformations
-- [ ] Chapter 05: Ray-Sphere Intersections
+- [X] Chapter 05: Ray-Sphere Intersections
 - [ ] Chapter 06: Light and Shading
 - [ ] Chapter 07: Making a Scene
 - [ ] Chapter 08: Shadows
@@ -71,6 +75,19 @@ Currently the following features (or code) are implemented:
 - [ ] Chapter 14: Groups
 - [ ] Chapter 15: Triangles
 - [ ] Chapter 16: Constructive Solid Geometry (CSG)
+
+## License
+
+Rust ray tracer is free, open source and permissively licensed! Except where noted (below and/or in individual files), all code in this repository is dual-licensed under either:
+
+* MIT License (`LICENSE-MIT` file or http://opensource.org/licenses/MIT)
+* Apache License, Version 2.0 (`LICENSE-APACHE` file or http://www.apache.org/licenses/LICENSE-2.0)
+
+at your option. This means you can select the license you prefer! This dual-licensing approach is the de-facto standard in the Rust ecosystem.
+
+## Contributions
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
 ## Gallery
 
@@ -86,16 +103,8 @@ Currently the following features (or code) are implemented:
   <img src="/examples/clock/clock.png" width="800" title="clock">
 </p>
 
+### Chapter 5: Circle
 
-## License
-
-Rust ray tracer is free, open source and permissively licensed! Except where noted (below and/or in individual files), all code in this repository is dual-licensed under either:
-
-* MIT License (`LICENSE-MIT` file or http://opensource.org/licenses/MIT)
-* Apache License, Version 2.0 (`LICENSE-APACHE` file or http://www.apache.org/licenses/LICENSE-2.0)
-
-at your option. This means you can select the license you prefer! This dual-licensing approach is the de-facto standard in the Rust ecosystem.
-
-## Contributions
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+<p align="center">
+  <img src="/examples/circle/circle.png" width="800" title="circle">
+</p>
