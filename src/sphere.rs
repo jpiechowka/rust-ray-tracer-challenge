@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use glam::{Affine3A, Vec3A};
+use glam::{Affine3A, Mat4, Vec3A, Vec4};
 
 use crate::intersection::Intersections;
 use crate::{intersection::SingleIntersection, ray::Ray};
@@ -56,13 +56,29 @@ impl Sphere {
         }
     }
 
+    // TODO: improve? Now the implementation follows the book implementation
+    pub fn normal_at(&self, world_point: Vec3A) -> Vec3A {
+        let sphere_transform = Mat4::from(self.transform);
+        let object_point = sphere_transform.inverse() * Vec4::from((world_point, 1.0));
+        let object_normal = self.normal_at_in_object_space(Vec3A::from(object_point));
+        let world_normal =
+            sphere_transform.inverse().transpose() * Vec4::from((object_normal, 0.0));
+        Vec3A::from(world_normal).normalize()
+    }
+
     pub fn set_transform(&mut self, transform: Affine3A) {
         self.transform = transform
+    }
+
+    fn normal_at_in_object_space(&self, object_space_point: Vec3A) -> Vec3A {
+        (object_space_point - self.sphere_center_point).normalize()
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::f32::consts::{FRAC_1_SQRT_2, PI};
+
     use approx::assert_abs_diff_eq;
     use glam::Vec3;
 
@@ -203,5 +219,70 @@ mod tests {
         sphere.set_transform(translation);
         let intersection = sphere.intersect(ray);
         assert_eq!(intersection.i.len(), 0);
+    }
+
+    #[test]
+    fn the_normal_on_a_sphere_at_a_point_on_the_x_axis() {
+        let sphere = Sphere::new(Vec3A::splat(0.0));
+        assert_eq!(
+            sphere.normal_at(Vec3A::new(1.0, 0.0, 0.0)),
+            Vec3A::new(1.0, 0.0, 0.0)
+        );
+    }
+
+    #[test]
+    fn the_normal_on_a_sphere_at_a_point_on_the_y_axis() {
+        let sphere = Sphere::new(Vec3A::splat(0.0));
+        assert_eq!(
+            sphere.normal_at(Vec3A::new(0.0, 1.0, 0.0)),
+            Vec3A::new(0.0, 1.0, 0.0)
+        );
+    }
+
+    #[test]
+    fn the_normal_on_a_sphere_at_a_point_on_the_z_axis() {
+        let sphere = Sphere::new(Vec3A::splat(0.0));
+        assert_eq!(
+            sphere.normal_at(Vec3A::new(0.0, 0.0, 1.0)),
+            Vec3A::new(0.0, 0.0, 1.0)
+        );
+    }
+
+    #[test]
+    fn the_normal_on_a_sphere_at_a_nonaxial_point() {
+        let sphere = Sphere::new(Vec3A::splat(0.0));
+        let f = 3_f32.sqrt() / 3_f32;
+        assert!(sphere
+            .normal_at(Vec3A::new(f, f, f))
+            .abs_diff_eq(Vec3A::new(f, f, f), f32::EPSILON));
+    }
+
+    #[test]
+    fn the_normal_is_a_normalized_vector() {
+        let sphere = Sphere::new(Vec3A::splat(0.0));
+        let f = 3_f32.sqrt() / 3_f32;
+        let normal = sphere.normal_at(Vec3A::new(f, f, f));
+        assert!(normal.abs_diff_eq(normal.normalize(), f32::EPSILON));
+    }
+
+    #[test]
+    fn computing_the_normal_on_a_translated_sphere() {
+        let mut sphere = Sphere::new(Vec3A::splat(0.0));
+        sphere.set_transform(Affine3A::from_translation(Vec3::new(0.0, 1.0, 0.0)));
+        let normal = sphere.normal_at(Vec3A::new(0.0, 1.0 + FRAC_1_SQRT_2, -FRAC_1_SQRT_2));
+        assert!(normal.abs_diff_eq(Vec3A::new(0.0, FRAC_1_SQRT_2, -FRAC_1_SQRT_2), f32::EPSILON));
+    }
+
+    #[test]
+    fn computing_the_normal_on_a_transformed_sphere() {
+        let mut sphere = Sphere::new(Vec3A::splat(0.0));
+        let scale = Affine3A::from_scale(Vec3::new(1.0, 0.5, 1.0));
+        let rotation = Affine3A::from_rotation_z(PI / 5_f32);
+        let transform = scale * rotation;
+        sphere.set_transform(transform);
+        let normal = sphere.normal_at(Vec3A::new(0.0, FRAC_1_SQRT_2, -FRAC_1_SQRT_2));
+        println!("{:?}", normal);
+        // TODO: Cannot use f32::EPSILON as the difference is too big
+        assert!(normal.abs_diff_eq(Vec3A::new(0.0, 0.97014, -0.24254), 0.00001));
     }
 }
