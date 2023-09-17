@@ -22,8 +22,11 @@ fn main() {
     let pixel_size = wall_size / CANVAS_PIXELS as f32;
     let middle = wall_size / 2.0;
 
-    let mut canvas =
-        Canvas::new_with_initial_color(CANVAS_PIXELS, CANVAS_PIXELS, Color::new_white());
+    let mut canvas = Canvas::new_with_initial_color(
+        CANVAS_PIXELS,
+        CANVAS_PIXELS,
+        Color::new_color(0.2, 0.2, 0.2),
+    );
     let ray_origin = Vec3A::new(0.0, 0.0, -5.0);
     let sphere_color = Color::new_red();
     let sphere = Sphere::new(Vec3A::new(0.0, 0.0, 0.0));
