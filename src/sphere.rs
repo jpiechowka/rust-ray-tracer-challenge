@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use glam::{Affine3A, Mat4, Vec3A, Vec4};
 
 use crate::intersection::Intersections;
+use crate::material::Material;
 use crate::{intersection::SingleIntersection, ray::Ray};
 
 // TODO: Maybe a better solution for sphere id? They need to be unique and UUID seems excessive
@@ -13,6 +14,7 @@ pub struct Sphere {
     pub id: String,
     sphere_center_point: Vec3A,
     transform: Affine3A,
+    material: Material,
 }
 
 impl Sphere {
@@ -26,6 +28,7 @@ impl Sphere {
             sphere_center_point,
             id: sphere_id,
             transform: Affine3A::default(),
+            material: Material::default(),
         }
     }
 
@@ -70,6 +73,10 @@ impl Sphere {
         self.transform = transform
     }
 
+    pub fn set_material(&mut self, material: Material) {
+        self.material = material
+    }
+
     fn normal_at_in_object_space(&self, object_space_point: Vec3A) -> Vec3A {
         (object_space_point - self.sphere_center_point).normalize()
     }
@@ -81,6 +88,8 @@ mod tests {
 
     use approx::assert_abs_diff_eq;
     use glam::Vec3;
+
+    use crate::color::Color;
 
     use super::*;
 
@@ -284,5 +293,19 @@ mod tests {
         println!("{:?}", normal);
         // TODO: Cannot use f32::EPSILON as the difference is too big
         assert!(normal.abs_diff_eq(Vec3A::new(0.0, 0.97014, -0.24254), 0.00001));
+    }
+
+    #[test]
+    fn a_sphere_has_a_default_material() {
+        let sphere = Sphere::new(Vec3A::splat(0.0));
+        assert_eq!(sphere.material, Material::default());
+    }
+
+    #[test]
+    fn can_assign_material_to_sphere() {
+        let custom_material = Material::new(Color::new_red(), 0.2, 0.4, 0.6, 300.0);
+        let mut sphere = Sphere::new(Vec3A::splat(0.0));
+        sphere.set_material(custom_material);
+        assert_eq!(sphere.material, custom_material);
     }
 }
